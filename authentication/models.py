@@ -3,11 +3,12 @@ import uuid
 from django.db import models
 
 from abstarct_model.base_model import BaseModel
-from .utils import generate_otp_code
+from .utils import generate_otp_code, phone_number_validation
+
 
 
 class User(BaseModel):
-    username = models.CharField(max_length=125, verbose_name='Имя пользователя')
+    phone_number = models.CharField(validators=[phone_number_validation], verbose_name='Номер телефона')
     password = models.CharField(max_length=125, verbose_name='Пороль')
     email = models.CharField(max_length=125, verbose_name='Электронная почта')
 

@@ -1,7 +1,9 @@
 import random
-from datetime import datetime, timedelta
-from django.utils import timezone
+import re
+from datetime import timedelta
 
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 
 def generate_otp_code():
@@ -20,3 +22,8 @@ def check_otp(otp):
         return False
 
     return True
+
+
+def phone_number_validation(value):
+    if not re.match(r'^\+998\d{9}$', value):
+        raise ValidationError(message='Phone number is invalid.')

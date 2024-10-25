@@ -7,8 +7,8 @@ from django.contrib.auth.hashers import make_password
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'username', 'email', 'first_name')
-    list_display_links = ('id', 'username', 'email', 'first_name')
+    list_display = ('id', 'phone_number', 'email', 'first_name')
+    list_display_links = ('id', 'phone_number', 'email', 'first_name')
 
     def save_model(self, request, obj, form, change):
         password = form.cleaned_data.get('password')
