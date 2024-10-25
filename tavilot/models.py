@@ -15,7 +15,7 @@ class Chapter(BaseModel):
 
 class Verse(BaseModel):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='глава')
-    number = models.PositiveIntegerField()
+    number = models.PositiveIntegerField(verbose_name="порядковый номер стиха")
     text = models.TextField(verbose_name="текст")
     text_arabic = models.TextField(verbose_name="текст на арабском языке")
     description = models.TextField(verbose_name="описание")
@@ -33,7 +33,7 @@ class Sales(BaseModel):
     #user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     item = models.CharField(max_length=150, verbose_name="элемент")
-    price = models.FloatField(default=0)
+    price = models.FloatField(default=0, verbose_name="цена")
 
     def __str__(self):
         return str(self.id) or ''
