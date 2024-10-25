@@ -18,7 +18,7 @@ class User(BaseModel):
     is_verified = models.BooleanField(default=False, verbose_name='Проверено')
 
     def __str__(self):
-        return self.username
+        return self.phone_number
 
     class Meta:
         verbose_name = 'пользователь'
@@ -34,4 +34,4 @@ class OTP(BaseModel):
     attempts = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.user.username} - {str(self.otp_code)}"
+        return f"{self.user.phone_number} - {str(self.otp_code)}"
