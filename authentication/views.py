@@ -14,7 +14,7 @@ class UserViewSet(ViewSet):
 
     def register(self, request):
         data = request.data
-        user = User.objects.filter(username=data.get('username')).first()
+        user = User.objects.filter(phone_number=data.get('phone_number')).first()
         if user and user.is_verified:
             return Response(data={'message': 'User already exists.', 'ok': False}, status=status.HTTP_400_BAD_REQUEST)
 
