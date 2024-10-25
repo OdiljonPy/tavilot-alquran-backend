@@ -3,10 +3,10 @@ from django.db.models import Count
 
 from tavilot.serializers import VerseSerializer
 
-def get_verse_list(context: dict, page: int, page_size: int):
-    query = context.get('query')
-    total_count = query.aggregate(total_count=Count('id'))['total_count']
-    pagination = Paginator(query, page_size)
+def get_verse_list(context: dict, page: int, page_size: int) -> dict:
+    verses = context.get('verses')
+    total_count = verses.aggregate(total_count=Count('id'))['total_count']
+    pagination = Paginator(verses, page_size)
     page_obj = pagination.get_page(page)
     response = {
         "totalElements": total_count,

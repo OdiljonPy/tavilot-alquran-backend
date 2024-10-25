@@ -15,7 +15,7 @@ class Chapter(BaseModel):
 
 class Verse(BaseModel):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='глава')
-
+    number = models.PositiveIntegerField()
     text = models.TextField(verbose_name="текст")
     text_arabic = models.TextField(verbose_name="текст на арабском языке")
     description = models.TextField(verbose_name="описание")

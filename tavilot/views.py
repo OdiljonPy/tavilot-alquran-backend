@@ -28,9 +28,9 @@ class VerseViewSet(ViewSet):
         q = serializer.validated_data.get('q', '')
         filter_ = Q()
         if q:
-            filter_ &= (Q(text__icontains=q) | Q(text_arabic__icontains=q))
+            filter_ &= (Q(text__icontains=q) | Q(text_arabic__icontains=q | Q(number__icontains=q)))
         verses = Verse.objects.filter(chapter_id=pk).filter(filter_)
-        response = get_verse_list(context={'request': request, 'query': verses}, page=serializer.data.get('page', 1),
+        response = get_verse_list(context={'request': request, 'verses': verses}, page=serializer.data.get('page', 1),
                                  page_size=serializer.data.get('page_size', 10))
         return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
 

@@ -20,4 +20,4 @@ class ChapterSerializer(serializers.ModelSerializer):
 class VerseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Verse
-        fields = ['id', 'text', 'chapter', 'text_arabic', 'description']
+        fields = ['id', 'chapter', 'number', 'text', 'text_arabic', 'description']
