@@ -11,7 +11,6 @@ class UserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True}
         }
     def save(self, **kwargs):
-        print(self.validated_data)
         self.validated_data['password'] = make_password(self.validated_data['password'])
         return super().save(**kwargs)
 

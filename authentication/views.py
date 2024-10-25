@@ -1,13 +1,13 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from exception.error_message import ErrorCodes
 from exception.exceptions import CustomApiException
-from drf_yasg.utils import swagger_auto_schema
 from .models import User, OTP
 from .serializers import UserSerializer, OTPSerializer
-from .utils import check_otp, otp_expiring
+from .utils import check_otp, otp_expiring, send_telegram_otp_code
 
 
 class UserViewSet(ViewSet):
@@ -35,6 +35,7 @@ class UserViewSet(ViewSet):
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='To many attempts! Try later.')
 
         obj.save()
+        send_telegram_otp_code(obj)
         return Response(data={'message': {'otp_key': obj.otp_key}, 'otp_code': obj.otp_code},
                         status=status.HTTP_201_CREATED)
 

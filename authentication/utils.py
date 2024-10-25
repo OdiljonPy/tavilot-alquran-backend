@@ -1,6 +1,8 @@
 import random
 import re
+import requests
 from datetime import timedelta
+from django.conf import settings
 
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -30,5 +32,15 @@ def phone_number_validation(value):
 
 
 def otp_expiring(value):
-    if timezone.now() - value > timedelta(minutes=1):
+    if timezone.now() - value > timedelta(minutes=12):
         raise ValidationError(message='OTP expired.')
+
+
+
+def send_telegram_otp_code(otp):
+
+    message = """P/j: Tavilot-alquran\nPhone: {}\nOTP_code {}\nExpire after < 3 minutes >""".format(otp.user.phone_number, otp.otp_code)
+    status = requests.get(settings.TELEGRAM_API_URL.format(settings.BOT_TOKEN, message, settings.CHANNEL_ID))
+
+    if status.status_code != 200:
+        raise ValidationError(message='Due to some reasons SMS was not sent')
