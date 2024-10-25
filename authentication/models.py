@@ -11,8 +11,8 @@ class User(BaseModel):
     password = models.CharField(max_length=125, verbose_name='Пороль')
     email = models.CharField(max_length=125, verbose_name='Электронная почта')
 
-    first_name = models.CharField(max_length=125, verbose_name='Имя')
-    last_name = models.CharField(max_length=125, verbose_name='Фамилия')
+    first_name = models.CharField(max_length=125, verbose_name='Имя', null=True, blank=True)
+    last_name = models.CharField(max_length=125, verbose_name='Фамилия', null=True, blank=True)
 
     is_verified = models.BooleanField(default=False, verbose_name='Проверено')
 
