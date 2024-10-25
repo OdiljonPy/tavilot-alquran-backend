@@ -27,3 +27,8 @@ def check_otp(otp):
 def phone_number_validation(value):
     if not re.match(r'^\+998\d{9}$', value):
         raise ValidationError(message='Phone number is invalid.')
+
+
+def otp_expiring(value):
+    if timezone.now() - value > timedelta(minutes=1):
+        raise ValidationError(message='OTP expired.')
