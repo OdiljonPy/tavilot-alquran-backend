@@ -1,15 +1,16 @@
 from .models import Chapter, Verse
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
+from exception.exceptions import CustomApiException
+from exception.error_message import ErrorCodes
 
 class ParamValidateSerializer(serializers.Serializer):
-    page = serializers.IntegerField(read_only=False, default=1)
-    page_size = serializers.IntegerField(read_only=False, default=10)
-    q = serializers.CharField(read_only=True)
+    page = serializers.IntegerField(required=False, default=1)
+    page_size = serializers.IntegerField(required=False, default=10)
+    q = serializers.CharField(required=False)
 
     def validate(self, data):
         if data.get('page') and data.get('page') < 1 or data.get('page_size') and data.get('page_size') < 1:
-            raise ValidationError('Page and page must be positive integers')
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Page and page size should be a positive integer')
         return data
 
 class ChapterSerializer(serializers.ModelSerializer):
