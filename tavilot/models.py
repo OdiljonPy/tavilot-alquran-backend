@@ -1,5 +1,6 @@
 from django.db import models
 from abstarct_model.base_model import BaseModel
+from tinymce.models import HTMLField
 
 class Chapter(BaseModel):
     name = models.CharField(max_length=150, verbose_name="название")
@@ -55,3 +56,31 @@ class AboutUs(BaseModel):
         verbose_name_plural = 'О нас'
         ordering = ('-created_at',)
 
+
+class Category(BaseModel):
+    name = models.CharField(max_length=500, verbose_name='навзание')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Категория поста'
+        verbose_name_plural = 'Категория посты'
+        ordering = ('-created_at',)
+
+
+class Post(BaseModel):
+    title = models.CharField(max_length=300, verbose_name="заголовок")
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="категория")
+    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True)
+    description = HTMLField(verbose_name='описание')
+    is_published = models.BooleanField(default=False, verbose_name="опубликовано")
+    is_premium = models.BooleanField(default=False, verbose_name="это премиум")
+
+    def __str__(self):
+        return str(self.id) or ''
+
+    class Meta:
+        verbose_name = 'Пост'
+        verbose_name_plural = 'Посты'
+        ordering = ('-created_at',)
