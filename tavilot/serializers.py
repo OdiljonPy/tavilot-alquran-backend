@@ -2,6 +2,7 @@ from .models import Chapter, Verse, Category, Post
 from rest_framework import serializers
 from exception.exceptions import CustomApiException
 from exception.error_message import ErrorCodes
+from config import settings
 
 
 class ParamValidateSerializer(serializers.Serializer):
@@ -17,24 +18,59 @@ class ParamValidateSerializer(serializers.Serializer):
 
 
 class ChapterSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
     class Meta:
         model = Chapter
         fields = ['id', 'name', 'description']
 
 
 class VerseSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['text'] = serializers.CharField(source=f'text_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
     class Meta:
         model = Verse
         fields = ['id', 'chapter', 'number', 'text', 'text_arabic', 'description']
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     class Meta:
         model = Category
         fields = ['id', 'name']
 
 
 class PostSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
     class Meta:
         model = Post
         fields = ['id', 'title', 'category', 'file', 'description', 'is_published', 'is_premium']
