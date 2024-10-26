@@ -91,7 +91,7 @@ class PostViewSet(ViewSet):
         tags=['Post'],
     )
     def posts_list(self, request, pk):
-        data = Post.objects.filter(category_id=pk)
+        data = Post.objects.filter(category_id=pk, is_published=True)
         return Response(data={'result': PostSerializer(data, many=True, context={'request': request}).data, 'ok': True},
                         status=status.HTTP_200_OK)
 
@@ -102,7 +102,7 @@ class PostViewSet(ViewSet):
         tags=['Post'],
     )
     def post_detail(self, request, pk):
-        data = Post.objects.filter(id=pk).first()
+        data = Post.objects.filter(id=pk, is_published=True).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(data={'result': PostSerializer(data, context={'request': request}).data, 'ok': True},
