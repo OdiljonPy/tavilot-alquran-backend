@@ -36,6 +36,7 @@ class VerseViewSet(ViewSet):
             openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description='Page size'),
             openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Search query'),
+            openapi.Parameter(name='type', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Type of verse, uzbek=1, arabic=2'),
         ],
         operation_summary='List of verses by chapter id',
         operation_description='List of verses by chapter id',
@@ -53,14 +54,20 @@ class VerseViewSet(ViewSet):
             filter_ &= (Q(text__icontains=q) | Q(text_arabic__icontains=q) | Q(number__icontains=q))
         verses = Verse.objects.filter(filter_, chapter_id=pk)
         response = get_verse_list(context={'request': request, 'verses': verses}, page=serializer.data.get('page', 1),
-                                  page_size=serializer.data.get('page_size', 10))
+                                  page_size=serializer.data.get('page_size', 10), type_=serializer.data.get('type'))
         return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
 
-    # def verse_detail(self, request, pk):
-    #     verse = Verse.objects.filter(id=pk).filter()
-    #     if not verse:
-    #         raise CustomApiException(ErrorCodes.NOT_FOUND)
-    #     return Response(data={'result': VerseSerializer(verse, context={'request': request}).data, 'ok': True}, status=status.HTTP_200_OK)
+    @swagger_auto_schema(
+        operation_summary='Verse detail',
+        operation_description='Verse detail for premium user',
+        responses={200: VerseSerializer(many=True)},
+        tags=['Verse'],
+    )
+    def verse_detail(self, request, pk):
+        verse = Verse.objects.filter(id=pk).first()
+        if not verse:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        return Response(data={'result': VerseSerializer(verse, context={'request': request}).data, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(ViewSet):
