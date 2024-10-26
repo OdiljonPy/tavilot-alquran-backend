@@ -31,6 +31,8 @@ class OTP(BaseModel):
     otp_code = models.IntegerField(default=generate_otp_code,)
     otp_key = models.UUIDField(default=uuid.uuid4)
 
+    otp_token = models.UUIDField(default=uuid.uuid4)
+
     attempts = models.IntegerField(default=0)
 
     def __str__(self):
