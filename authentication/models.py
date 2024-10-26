@@ -14,7 +14,7 @@ class User(BaseModel):
     phone_number = models.CharField(validators=[phone_number_validation], verbose_name='Номер телефона')
     password = models.CharField(max_length=125, verbose_name='Пороль')
     email = models.CharField(max_length=125, verbose_name='Электронная почта')
-    rate = models.PositiveIntegerField(choices=USER_RATE, default=1)
+    rate = models.PositiveIntegerField(choices=USER_RATE, default=1, verbose_name="тариф")
 
     first_name = models.CharField(max_length=125, verbose_name='Имя', null=True, blank=True)
     last_name = models.CharField(max_length=125, verbose_name='Фамилия', null=True, blank=True)
