@@ -1,6 +1,7 @@
 from django.db import models
 from abstarct_model.base_model import BaseModel
 from tinymce.models import HTMLField
+from authentication.models import User
 
 class Chapter(BaseModel):
     name = models.CharField(max_length=150, verbose_name="название")
@@ -31,7 +32,7 @@ class Verse(BaseModel):
 
 
 class Sales(BaseModel):
-    #user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     item = models.CharField(max_length=150, verbose_name="элемент")
     price = models.FloatField(default=0, verbose_name="цена")
