@@ -12,13 +12,6 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('phone_number', 'first_name', 'email')
     list_filter = ('rate',)
 
-    def save_model(self, request, obj, form, change):
-        password = form.cleaned_data.get('password')
-        print(password, '/' * 50)
-        if password and not change or form.initial['password'] != password:
-            obj.password = make_password(password)
-        super().save_model(request, obj, form, change)
-
 
 @admin.register(OTP)
 class OTPAdmin(admin.ModelAdmin):
