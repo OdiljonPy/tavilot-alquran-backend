@@ -10,7 +10,7 @@ from exception.error_message import ErrorCodes
 from exception.exceptions import CustomApiException
 from .models import User, OTP
 from .serializers import UserSerializer, PhoneNumberSerializer, OTPSerializer, OTPTokenSerializer, \
-    UserLoginRequestSerializer
+    UserLoginRequestSerializer, TokenSerializer
 from .swagger_schema.requests import OTPTokenWithPasswordSerializer
 from .utils import check_otp, otp_expiring, send_telegram_otp_code, user_existing
 
@@ -79,16 +79,27 @@ class UserViewSet(ViewSet):
         OTP.objects.filter(user_id=user.id).delete()
         return Response({'message': 'Successfully verified.', 'ok': True}, status=status.HTTP_200_OK)
 
-    # def login(self, request):
-    #     login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    #     serializer = UserLoginRequestSerializer(data=request.data, context={'request': request})
-    #     if not serializer.is_valid():
-    #         raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
-    #
-    #     user = user_existing(request.data)
-    #     refresh = RefreshToken.for_user(user)
-    #     access_token = refresh.access_token
-    #     access_token[]
+    @swagger_auto_schema(
+        operation_summary='Login user',
+        operation_description='Login user',
+        request_body=UserLoginRequestSerializer,
+        responses={200: TokenSerializer()},
+    )
+    def login(self, request):
+        login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        serializer = UserLoginRequestSerializer(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
+
+        user = user_existing(request.data)
+        refresh_token = RefreshToken.for_user(user)
+        access_token = refresh_token.access_token
+        access_token['rate'] = user.rate
+        access_token['login_time'] = login_time
+        user.login_time = login_time
+        user.save(update_fields=['login_time'])
+        return Response({'result': {'access_token': str(access_token), 'refresh_token': refresh_token}},
+                        status=status.HTTP_200_OK)
 
 
 class PasswordViewSet(ViewSet):

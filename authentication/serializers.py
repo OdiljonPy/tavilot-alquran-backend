@@ -35,6 +35,12 @@ class PhoneNumberSerializer(serializers.Serializer):
 class OTPTokenSerializer(serializers.Serializer):
     otp_token = serializers.UUIDField()
 
+
 class UserLoginRequestSerializer(serializers.Serializer):
     phone_number = serializers.CharField()
     password = serializers.CharField()
+
+
+class TokenSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()
+    access_token = serializers.CharField()
