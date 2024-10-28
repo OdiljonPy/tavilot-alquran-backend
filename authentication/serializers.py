@@ -44,3 +44,8 @@ class UserLoginRequestSerializer(serializers.Serializer):
 class TokenSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
     access_token = serializers.CharField()
+
+
+class ChangePasswordRequestSerializer(serializers.Serializer):
+    old_password = serializers.CharField()
+    new_password = serializers.CharField()

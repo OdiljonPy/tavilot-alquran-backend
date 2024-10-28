@@ -14,11 +14,11 @@ from exception.exceptions import CustomApiException
 
 def user_existing(data):
     from .models import User
-    user = User.objects.get(phone_number=data['phone_number']).first()
+    user = User.objects.filter(phone_number=data.get('phone_number'), is_verified=True).first()
     if not user:
-        raise CustomApiException(ErrorCodes.INVALID_INPUT.value)
+        raise CustomApiException(ErrorCodes.USER_DOES_NOT_EXIST)
     if not check_password(data['password'], user.password):
-        raise CustomApiException(ErrorCodes.INVALID_INPUT.value)
+        raise CustomApiException(ErrorCodes.INCORRECT_PASSWORD)
     return user
 
 
@@ -57,3 +57,21 @@ def send_telegram_otp_code(otp):
 
     if status.status_code != 200:
         raise ValidationError(message='Due to some reasons SMS was not sent')
+
+
+def check_otp_attempts(otp, otp_code):
+
+    if otp is None:
+        raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP is invalid.')
+
+    if otp_expiring(otp.created_at):
+        raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP is expired.')
+
+    if otp.attempts > 2:
+        raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Too many attempts.')
+
+    if otp.otp_code != otp_code:
+        otp.attempts += 1
+        otp.save(update_fields=['attempts'])
+        raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP code is incorrect.')
+    return otp
