@@ -17,6 +17,7 @@ class User(BaseModel):
     rate = models.PositiveIntegerField(choices=USER_RATE, default=1, verbose_name="тариф")
 
     login_time = models.DateTimeField(null=True, blank=True, verbose_name='Время входа')
+
     first_name = models.CharField(max_length=125, verbose_name='Имя', null=True, blank=True)
     last_name = models.CharField(max_length=125, verbose_name='Фамилия', null=True, blank=True)
 

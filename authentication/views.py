@@ -86,7 +86,6 @@ class UserViewSet(ViewSet):
         access_token['login_time'] = login_time
         user.login_time = login_time
         user.save()
-        print(user)
         return Response(
             {'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token)}, 'ok': True},
             status=status.HTTP_200_OK)
@@ -170,12 +169,9 @@ class PasswordViewSet(ViewSet):
         serializer = ChangePasswordRequestSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
-        print(request.user)
 
         user = User.objects.filter(id=request.user.id).first()
-        print(user)
-        print(user.password)
-        print(request.user.password)
+
 
         if not check_password(request.data.get('old_password'), user.password):
             raise CustomApiException(error_code=ErrorCodes.INCORRECT_PASSWORD)
