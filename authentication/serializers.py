@@ -49,3 +49,7 @@ class TokenSerializer(serializers.Serializer):
 class ChangePasswordRequestSerializer(serializers.Serializer):
     old_password = serializers.CharField()
     new_password = serializers.CharField()
+
+class OTPTokenWithPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(write_only=True)
+    otp_token = serializers.UUIDField()

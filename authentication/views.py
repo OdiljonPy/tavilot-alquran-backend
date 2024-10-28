@@ -11,8 +11,7 @@ from exception.error_message import ErrorCodes
 from exception.exceptions import CustomApiException
 from .models import User, OTP
 from .serializers import UserSerializer, PhoneNumberSerializer, OTPSerializer, OTPTokenSerializer, \
-    UserLoginRequestSerializer, TokenSerializer, ChangePasswordRequestSerializer
-from .swagger_schema.requests import OTPTokenWithPasswordSerializer
+    UserLoginRequestSerializer, TokenSerializer, ChangePasswordRequestSerializer, OTPTokenWithPasswordSerializer
 from .utils import check_otp, send_telegram_otp_code, user_existing, check_otp_attempts
 
 
@@ -59,7 +58,6 @@ class UserViewSet(ViewSet):
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Fill all blanks.')
 
         otp = check_otp_attempts(OTP.objects.filter(otp_key=otp_key).first(), otp_code)
-        print(otp)
 
         user = otp.user
         user.is_verified = True
@@ -77,7 +75,7 @@ class UserViewSet(ViewSet):
         login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         serializer = UserLoginRequestSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
         user = user_existing(request.data)
         refresh_token = RefreshToken.for_user(user)
@@ -143,7 +141,7 @@ class PasswordViewSet(ViewSet):
 
         serializer = OTPTokenWithPasswordSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
         user = User.objects.filter(otp__otp_token=request.data.get('otp_token')).first()
 
@@ -168,7 +166,7 @@ class PasswordViewSet(ViewSet):
     def change_password(self, request):
         serializer = ChangePasswordRequestSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
         user = User.objects.filter(id=request.user.id).first()
 
