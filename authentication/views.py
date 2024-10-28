@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from django.contrib.auth.hashers import check_password
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
@@ -10,9 +11,9 @@ from exception.error_message import ErrorCodes
 from exception.exceptions import CustomApiException
 from .models import User, OTP
 from .serializers import UserSerializer, PhoneNumberSerializer, OTPSerializer, OTPTokenSerializer, \
-    UserLoginRequestSerializer
+    UserLoginRequestSerializer, TokenSerializer, ChangePasswordRequestSerializer
 from .swagger_schema.requests import OTPTokenWithPasswordSerializer
-from .utils import check_otp, otp_expiring, send_telegram_otp_code, user_existing
+from .utils import check_otp, send_telegram_otp_code, user_existing, check_otp_attempts
 
 
 class UserViewSet(ViewSet):
@@ -27,21 +28,20 @@ class UserViewSet(ViewSet):
         data = request.data
         user = User.objects.filter(phone_number=data.get('phone_number')).first()
         if user and user.is_verified:
-            return Response(data={'message': 'User already exists.', 'ok': False}, status=status.HTTP_400_BAD_REQUEST)
+            raise CustomApiException(error_code=ErrorCodes.USER_ALREADY_EXISTS)
 
         serializer = UserSerializer(user, data=data, partial=True) if user else UserSerializer(data=data)
 
         if not serializer.is_valid():
-            return Response(data={'message': serializer.errors, 'ok': False}, status=status.HTTP_400_BAD_REQUEST)
-
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED)
         validated_user = serializer.save()
         obj = OTP.objects.create(user_id=validated_user.id)
-        if check_otp(OTP.objects.filter(user_id=validated_user.id)) is False:
+        if check_otp(OTP.objects.filter(user_id=validated_user.id)):
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='To many attempts! Try later.')
 
         obj.save()
         send_telegram_otp_code(obj)
-        return Response(data={'message': {'otp_key': obj.otp_key}, 'otp_code': obj.otp_code},
+        return Response(data={'result': {'otp_key': obj.otp_key, 'otp_code': obj.otp_code}, 'ok': True},
                         status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
@@ -58,20 +58,8 @@ class UserViewSet(ViewSet):
         if not otp_code or not otp_key:
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Fill all blanks.')
 
-        otp = OTP.objects.filter(otp_key=otp_key).first()
-        if otp is None:
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP is invalid.')
-
-        if otp_expiring(otp.created_at):
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP is expired.')
-
-        if otp.attempts > 2:
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Too many attempts.')
-
-        if otp.otp_code != otp_code:
-            otp.attempts += 1
-            otp.save(update_fields=['attempts'])
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP code is incorrect.')
+        otp = check_otp_attempts(OTP.objects.filter(otp_key=otp_key).first(), otp_code)
+        print(otp)
 
         user = otp.user
         user.is_verified = True
@@ -79,16 +67,28 @@ class UserViewSet(ViewSet):
         OTP.objects.filter(user_id=user.id).delete()
         return Response({'message': 'Successfully verified.', 'ok': True}, status=status.HTTP_200_OK)
 
-    # def login(self, request):
-    #     login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    #     serializer = UserLoginRequestSerializer(data=request.data, context={'request': request})
-    #     if not serializer.is_valid():
-    #         raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
-    #
-    #     user = user_existing(request.data)
-    #     refresh = RefreshToken.for_user(user)
-    #     access_token = refresh.access_token
-    #     access_token[]
+    @swagger_auto_schema(
+        operation_summary='Login user',
+        operation_description='Login user',
+        request_body=UserLoginRequestSerializer,
+        responses={200: TokenSerializer()},
+    )
+    def login(self, request):
+        login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        serializer = UserLoginRequestSerializer(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
+
+        user = user_existing(request.data)
+        refresh_token = RefreshToken.for_user(user)
+        access_token = refresh_token.access_token
+        access_token['rate'] = user.rate
+        access_token['login_time'] = login_time
+        user.login_time = login_time
+        user.save()
+        return Response(
+            {'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token)}, 'ok': True},
+            status=status.HTTP_200_OK)
 
 
 class PasswordViewSet(ViewSet):
@@ -113,7 +113,7 @@ class PasswordViewSet(ViewSet):
 
         otp.save()
         send_telegram_otp_code(otp)
-        return Response({'message': {'otp_key': otp.otp_key}}, status=status.HTTP_201_CREATED)
+        return Response({'message': {'otp_key': otp.otp_key}, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
         operation_summary='Send token for verifying password',
@@ -129,15 +129,7 @@ class PasswordViewSet(ViewSet):
         if not otp_code or not otp_key:
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Fill all blanks.')
 
-        otp = OTP.objects.filter(otp_code=otp_code).first()
-        if otp_expiring(otp.created_at):
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP is expired.')
-        if otp.attempts > 2:
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Too many attempts. Try later.')
-
-        if otp.otp_code != otp_code:
-            otp.attempts += 1
-            otp.save(update_fields=['attempts'])
+        otp = check_otp_attempts(OTP.objects.filter(otp_code=otp_code).first(), otp_code)
 
         return Response({'message': {'otp_token': otp.otp_token}, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -148,20 +140,45 @@ class PasswordViewSet(ViewSet):
         responses={200: UserSerializer()},
     )
     def verify_with_token(self, request):
-        otp_token = request.data.get('otp_token', '')
-        password = request.data.get('password', '')
 
-        if not otp_token or not password:
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Fill all blanks.')
-        user = User.objects.filter(otp__otp_token=otp_token).first()
-
-        if not user:
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='User does not exist.')
-
-        serializer = UserSerializer(user, data={'password': password}, partial=True)
+        serializer = OTPTokenWithPasswordSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
 
+        user = User.objects.filter(otp__otp_token=request.data.get('otp_token')).first()
+
+        if not user:
+            raise CustomApiException(error_code=ErrorCodes.USER_DOES_NOT_EXIST, message='User does not exist.')
+
+        serializer = UserSerializer(user, data={'password': request.data.get('password')}, partial=True)
+        if not serializer.is_valid():
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+
         serializer.save()
+        OTP.objects.filter(user_id=user.id).delete()
 
         return Response(data={'message': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Change password',
+        operation_description='Change password',
+        request_body=ChangePasswordRequestSerializer,
+        responses={200: 'success'},
+    )
+    def change_password(self, request):
+        serializer = ChangePasswordRequestSerializer(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
+
+        user = User.objects.filter(id=request.user.id).first()
+
+
+        if not check_password(request.data.get('old_password'), user.password):
+            raise CustomApiException(error_code=ErrorCodes.INCORRECT_PASSWORD)
+
+        validate_data = UserSerializer(user, data={'password': request.data.get('new_password')}, partial=True)
+        if not validate_data.is_valid():
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=validate_data.errors)
+        validate_data.save()
+
+        return Response({'result': validate_data.data, 'ok': True}, status=status.HTTP_200_OK)
