@@ -27,7 +27,7 @@ class User(BaseModel):
     class Meta:
         verbose_name = 'пользователь'
         verbose_name_plural = 'пользователи'
-        ordering = ['-created_at']
+        ordering = ('-created_at',)
 
 
 class OTP(BaseModel):
