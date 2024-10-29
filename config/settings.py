@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'authentication.middlewares.AuthenticationBaseRedirectMiddleware',
+    'tavilot.middlewares.VerseMiddleware',
 
 ]
 

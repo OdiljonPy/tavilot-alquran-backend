@@ -1,35 +1,6 @@
-from .models import Chapter, Verse, Category, Post
+from .models import Chapter, Verse, Category, Post, Sheikh, Audio, AboutUs
 from rest_framework import serializers
-from exception.exceptions import CustomApiException
-from exception.error_message import ErrorCodes
 from config import settings
-
-
-class ParamValidateSerializer(serializers.Serializer):
-    page = serializers.IntegerField(required=False, default=1)
-    page_size = serializers.IntegerField(required=False, default=10)
-    q = serializers.CharField(required=False)
-
-    def validate(self, data):
-        if data.get('page') and data.get('page') < 1 or data.get('page_size') and data.get('page_size') < 1:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
-                                     message='Page and page size should be a positive integer')
-        return data
-
-
-class ChapterSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get('request')
-        language = 'ru'
-        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
-            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
-        self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
-
-    class Meta:
-        model = Chapter
-        fields = ['id', 'name', 'description']
 
 
 class VerseSerializer(serializers.ModelSerializer):
@@ -46,7 +17,46 @@ class VerseSerializer(serializers.ModelSerializer):
         model = Verse
         fields = ['id', 'chapter', 'number', 'text', 'text_arabic', 'description']
 
+class ChapterListSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
+
+    class Meta:
+        model = Chapter
+        fields = ['id', 'name', 'description']
+
+class ChapterFullSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
+    verses = VerseSerializer(many=True, read_only=True, source='verse_set')
+
+    class Meta:
+        model = Chapter
+        fields = ['id', 'name', 'description', 'verses']
+
+
 class VerseUzArabSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'ru'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['text'] = serializers.CharField(source=f'text_{language}')
     class Meta:
         model = Verse
         fields = ['id', 'chapter', 'number', 'text', 'text_arabic']
@@ -79,3 +89,18 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = ['id', 'title', 'category', 'file', 'description', 'is_published', 'is_premium']
+
+class SheikhSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sheikh
+        fields = ['id', 'name']
+
+class AudioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Audio
+        fields = ['id', 'sheikh', 'chapter', 'verse', 'audio', 'audio_translate']
+
+class AboutUsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AboutUs
+        fields = ['id', 'description']
