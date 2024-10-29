@@ -17,6 +17,16 @@ class ParamValidateSerializer(serializers.Serializer):
         return data
 
 
+class ParamValidateUzArabSerializer(ParamValidateSerializer):
+    version = serializers.IntegerField(required=False, default=1)
+
+    def validate(self, data):
+        if data.get('version') and data.get('version') not in [1, 2]:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED,
+                                     message='Version must be 1 or 2')
+        return data
+
+
 class ChapterSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -50,6 +60,12 @@ class VerseUzArabSerializer(serializers.ModelSerializer):
     class Meta:
         model = Verse
         fields = ['id', 'chapter', 'number', 'text', 'text_arabic']
+
+
+class VerseArabSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Verse
+        fields = ['id', 'chapter', 'number', 'text_arabic']
 
 
 class CategorySerializer(serializers.ModelSerializer):

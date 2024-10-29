@@ -9,6 +9,7 @@ class ErrorCodes(Enum):
     INCORRECT_PASSWORD = 4
     USER_DOES_NOT_EXIST = 5
     USER_ALREADY_EXISTS = 6
+    PERMISSION_DENIED = 7
 
 
 error_messages = {
@@ -18,6 +19,7 @@ error_messages = {
     4: {"result": "Incorrect password", "http_status": status.HTTP_400_BAD_REQUEST},
     5: {"result": "User Does not exist", "http_status": status.HTTP_400_BAD_REQUEST},
     6: {"result": "User Already exists", "http_status": status.HTTP_400_BAD_REQUEST},
+    7: {'result': "You don't have access", "http_status": status.HTTP_403_FORBIDDEN},
 }
 
 

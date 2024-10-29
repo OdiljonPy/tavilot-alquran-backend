@@ -1,5 +1,6 @@
 from django.db.models import Q
 from .repository.get_filtered_verses import get_verse_list
+from .repository.get_filtered_full_verse import get_full_verse_list
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from exception.exceptions import CustomApiException
@@ -8,7 +9,7 @@ from rest_framework import status
 from .models import (Chapter, Verse,
                      Category, Post)
 from .serializers import (
-    ChapterSerializer, ParamValidateSerializer,
+    ChapterSerializer, ParamValidateSerializer, ParamValidateUzArabSerializer,
     VerseSerializer, PostSerializer,
     CategorySerializer)
 from drf_yasg.utils import swagger_auto_schema
@@ -35,16 +36,17 @@ class VerseViewSet(ViewSet):
             openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
             openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
                               description='Page size'),
-            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Search query')
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Search query'),
+            openapi.Parameter(name='version', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Version of Verses, Arabic = 1, Uzbek vs Arabic = 2'),
         ],
-        operation_summary='List of verses by chapter id',
-        operation_description='List of verses by chapter id',
+        operation_summary='List of verses by chapter id and version',
+        operation_description='List of verses by chapter id and version',
         responses={200: VerseSerializer(many=True)},
         tags=['Verse'],
     )
-    def verse_list(self, request, pk):
+    def verse_uz_arab_list(self, request, pk):
         params = request.query_params
-        serializer = ParamValidateSerializer(data=params, context={'request': request})
+        serializer = ParamValidateUzArabSerializer(data=params, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, serializer.errors)
         q = serializer.validated_data.get('q', '')
@@ -54,21 +56,51 @@ class VerseViewSet(ViewSet):
         verses = Verse.objects.filter(filter_, chapter_id=pk)
         response = get_verse_list(context={'request': request, 'verses': verses},
                                   page=serializer.validated_data.get('page', 1),
-                                  page_size=serializer.validated_data.get('page_size', 10))
+                                  page_size=serializer.validated_data.get('page_size', 10),
+                                  version=serializer.validated_data.get('version', 1))
         return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        operation_summary='Verse detail',
-        operation_description='Verse detail for premium user',
-        responses={200: VerseSerializer()},
+        manual_parameters=[
+            openapi.Parameter(name='page', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='Page number'),
+            openapi.Parameter(name='page_size', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER,
+                              description='Page size'),
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, description='Search query'),
+        ],
+        operation_summary='List of full verses by chapter id',
+        operation_description='List of full verses by chapter id',
+        responses={200: VerseSerializer(many=True)},
         tags=['Verse'],
     )
-    def verse_detail(self, request, pk):
-        verse = Verse.objects.filter(id=pk).first()
-        if not verse:
-            raise CustomApiException(ErrorCodes.NOT_FOUND)
-        return Response(data={'result': VerseSerializer(verse, context={'request': request}).data, 'ok': True},
-                        status=status.HTTP_200_OK)
+    def full_verse_list(self, request, pk):
+        params = request.query_params
+        if request.user.rate != 2:
+            raise CustomApiException(ErrorCodes.PERMISSION_DENIED)
+        serializer = ParamValidateSerializer(data=params, context={'request': request})
+        if not serializer.is_valid():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, serializer.errors)
+        q = serializer.validated_data.get('q', '')
+        filter_ = Q()
+        if q:
+            filter_ &= (Q(text__icontains=q) | Q(text_arabic__icontains=q) | Q(number__icontains=q))
+        verses = Verse.objects.filter(filter_, chapter_id=pk)
+        response = get_full_verse_list(context={'request': request, 'verses': verses},
+                                  page=serializer.validated_data.get('page', 1),
+                                  page_size=serializer.validated_data.get('page_size', 10))
+        return Response(data={'result': response, 'ok': True}, status=status.HTTP_200_OK)
+
+    # @swagger_auto_schema(
+    #     operation_summary='Verse detail',
+    #     operation_description='Verse detail for premium user',
+    #     responses={200: VerseSerializer()},
+    #     tags=['Verse'],
+    # )
+    # def verse_detail(self, request, pk):
+    #     verse = Verse.objects.filter(id=pk).first()
+    #     if not verse:
+    #         raise CustomApiException(ErrorCodes.NOT_FOUND)
+    #     return Response(data={'result': VerseSerializer(verse, context={'request': request}).data, 'ok': True},
+    #                     status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(ViewSet):
