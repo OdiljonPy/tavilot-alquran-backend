@@ -29,7 +29,7 @@ class OTPSerializer(serializers.ModelSerializer):
 
 
 class PhoneNumberSerializer(serializers.Serializer):
-    phone_number = serializers.CharField()
+    phone_number = serializers.CharField(required=True)
 
 
 class OTPTokenSerializer(serializers.Serializer):
@@ -37,8 +37,8 @@ class OTPTokenSerializer(serializers.Serializer):
 
 
 class UserLoginRequestSerializer(serializers.Serializer):
-    phone_number = serializers.CharField()
-    password = serializers.CharField()
+    phone_number = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
 
 
 class TokenSerializer(serializers.Serializer):
@@ -47,5 +47,9 @@ class TokenSerializer(serializers.Serializer):
 
 
 class ChangePasswordRequestSerializer(serializers.Serializer):
-    old_password = serializers.CharField()
-    new_password = serializers.CharField()
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+class OTPTokenWithPasswordSerializer(serializers.Serializer):
+    otp_token = serializers.CharField()
+    password = serializers.CharField(required=True)

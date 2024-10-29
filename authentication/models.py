@@ -10,6 +10,7 @@ USER_RATE = (
     (2, 'Pro'),
 )
 
+
 class User(BaseModel):
     phone_number = models.CharField(validators=[phone_number_validation], verbose_name='Номер телефона')
     password = models.CharField(max_length=125, verbose_name='Пороль')
@@ -34,12 +35,18 @@ class User(BaseModel):
 
 class OTP(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    otp_code = models.IntegerField(default=generate_otp_code,)
+    otp_code = models.IntegerField(default=generate_otp_code, )
     otp_key = models.UUIDField(default=uuid.uuid4)
-
-    otp_token = models.UUIDField(default=uuid.uuid4)
 
     attempts = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.user.phone_number} - {str(self.otp_code)}"
+
+
+class ResetToken(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.UUIDField(default=uuid.uuid4, unique=True)
+
+    def __str__(self):
+        return self.user.phone_number
