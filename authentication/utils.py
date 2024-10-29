@@ -61,7 +61,7 @@ def check_otp_attempts(otp, otp_code):
     if otp_expiring(otp.created_at):
         raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP is expired.')
 
-    if otp.first().attempts > 2:
+    if otp.attempts > 2:
         raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Too many attempts.')
 
     if otp.otp_code != otp_code:
