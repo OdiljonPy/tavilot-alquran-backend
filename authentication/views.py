@@ -51,13 +51,11 @@ class UserViewSet(ViewSet):
         tags=['User']
     )
     def verify(self, request):
-        otp_code = request.data.get('otp_code', '')
-        otp_key = request.data.get('otp_key', '')
+        serializer = OTPSerializer(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED)
 
-        if not otp_code or not otp_key:
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='Fill all blanks.')
-
-        otp = check_otp_attempts(OTP.objects.filter(otp_key=otp_key).first(), otp_code)
+        otp = check_otp_attempts(OTP.objects.filter(otp_key=request.data['otp_key']).first(), request.data['otp_code'])
 
         user = otp.user
         user.is_verified = True
@@ -130,6 +128,8 @@ class PasswordViewSet(ViewSet):
 
         token = ResetToken.objects.create(user_id=otp.user.id)
 
+        OTP.objects.filter(user_id=otp.user.id).delete()
+
         return Response(data={'message': {'otp_token': token.token}, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
@@ -154,7 +154,6 @@ class PasswordViewSet(ViewSet):
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
         serializer.save()
-        OTP.objects.filter(user_id=user.id).delete()
 
         return Response(data={'message': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
@@ -178,5 +177,6 @@ class PasswordViewSet(ViewSet):
         if not validate_data.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=validate_data.errors)
         validate_data.save()
+        ResetToken.objects.filter(user_id=user.id).delete()
 
         return Response({'result': validate_data.data, 'ok': True}, status=status.HTTP_200_OK)
