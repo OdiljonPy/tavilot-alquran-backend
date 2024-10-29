@@ -55,7 +55,7 @@ class UserViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED)
 
-        otp = check_otp_attempts(OTP.objects.filter(otp_key=request.data['otp_key']).first(), request.data['otp_code'])
+        otp = check_otp_attempts(OTP.objects.filter(otp_key=serializer.validated_data.get('otp_key')).first(), serializer.validated_data.get('otp_code'))
 
         user = otp.user
         user.is_verified = True
@@ -97,7 +97,11 @@ class PasswordViewSet(ViewSet):
     )
     def reset_password(self, request):
 
-        user = User.objects.filter(phone_number=request.data.get('phone_number')).first()
+        serializer = OTPSerializer(data=request.data, context={'request': request})
+        if not serializer.is_valid():
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
+
+        user = User.objects.filter(phone_number=serializer.validated_data.get('phone_number')).first()
 
         if not user or not user.is_verified:
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT,
@@ -124,7 +128,7 @@ class PasswordViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
-        otp = check_otp_attempts(OTP.objects.filter(otp_key=request.data['otp_key']).first(), request.data['otp_code'])
+        otp = check_otp_attempts(OTP.objects.filter(otp_key=serializer.validated_data.get('otp_key')).first(), serializer.validated_data.get('otp_code'))
 
         token = ResetToken.objects.create(user_id=otp.user.id)
 
@@ -144,7 +148,7 @@ class PasswordViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
 
-        user = User.objects.filter(resettoken__token=request.data.get('otp_token')).first()
+        user = User.objects.filter(resettoken__token=serializer.validated_data.get('otp_token')).first()
 
         if not user:
             raise CustomApiException(error_code=ErrorCodes.USER_DOES_NOT_EXIST, message='User does not exist.')
@@ -170,10 +174,10 @@ class PasswordViewSet(ViewSet):
 
         user = User.objects.filter(id=request.user.id).first()
 
-        if not check_password(request.data.get('old_password'), user.password):
+        if not check_password(serializer.validated_data.get('old_password'), user.password):
             raise CustomApiException(error_code=ErrorCodes.INCORRECT_PASSWORD)
 
-        validate_data = UserSerializer(user, data={'password': request.data.get('new_password')}, partial=True)
+        validate_data = UserSerializer(user, data={'password': serializer.validated_data.get('new_password')}, partial=True)
         if not validate_data.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=validate_data.errors)
         validate_data.save()
