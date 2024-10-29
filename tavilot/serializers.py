@@ -21,7 +21,7 @@ class ChapterListSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
-        language = 'ru'
+        language = 'uz'
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
@@ -36,7 +36,7 @@ class ChapterFullSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
-        language = 'ru'
+        language = 'uz'
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
@@ -66,7 +66,7 @@ class CategorySerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
-        language = 'ru'
+        language = 'uz'
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
@@ -80,7 +80,7 @@ class PostSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
-        language = 'ru'
+        language = 'uz'
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['title'] = serializers.CharField(source=f'title_{language}')
