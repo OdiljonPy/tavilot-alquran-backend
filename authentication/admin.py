@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import User, OTP
+from .models import User, OTP, ResetToken
 
 from django.contrib.auth.hashers import make_password
 
@@ -16,4 +16,9 @@ class UserAdmin(admin.ModelAdmin):
 @admin.register(OTP)
 class OTPAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'attempts')
+    list_display_links = ('id', 'user')
+
+@admin.register(ResetToken)
+class ResetTokenAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'token')
     list_display_links = ('id', 'user')

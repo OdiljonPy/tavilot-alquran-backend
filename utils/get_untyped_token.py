@@ -7,4 +7,4 @@ def decode_token(token):
         payload = UntypedToken(token)
         return payload
     except TokenError:
-        return None
+        return

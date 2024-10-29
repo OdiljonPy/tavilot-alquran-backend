@@ -23,21 +23,17 @@ def user_existing(data):
 
 
 def generate_otp_code():
-    first_digit = random.randint(1, 9)
-    digits = [str(random.randint(0, 9)) for _ in range(4)]
-    return str(first_digit) + ''.join(digits)
+    return str(random.randint(100000, 999999))
 
 
 def check_otp(otp):
     first_otp = otp.order_by('created_at').first()
 
-    if timezone.now() - first_otp.created_at > timedelta(minutes=1):
+    if timezone.now() - first_otp.created_at > timedelta(hours=12):
         otp.delete()
 
     if len(otp) > 3:
-        return True
-
-    return False
+        raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='To many attempts! Try later.')
 
 
 def phone_number_validation(value):
@@ -51,16 +47,14 @@ def otp_expiring(value):
 
 
 def send_telegram_otp_code(otp):
-    message = """P/j: Tavilot-alquran\nPhone: {}\nOTP_code {}\nExpire after < 3 minutes >""".format(
-        otp.user.phone_number, otp.otp_code)
-    status = requests.get(settings.TELEGRAM_API_URL.format(settings.BOT_TOKEN, message, settings.CHANNEL_ID))
 
-    if status.status_code != 200:
-        raise ValidationError(message='Due to some reasons SMS was not sent')
+    message = """P/j: Tavilot-alquran\nPhone: {}\nOTP_code {}\nExpire in {}""".format(
+        otp.user.phone_number, otp.otp_code, (otp.created_at + timedelta(minutes=3)).strftime('%H:%M:%S'))
+
+    requests.get(settings.TELEGRAM_API_URL.format(settings.BOT_TOKEN, message, settings.CHANNEL_ID))
 
 
 def check_otp_attempts(otp, otp_code):
-
     if otp is None:
         raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='OTP is invalid.')
 
