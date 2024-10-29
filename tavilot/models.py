@@ -85,3 +85,31 @@ class Post(BaseModel):
         verbose_name = 'Пост'
         verbose_name_plural = 'Посты'
         ordering = ('-created_at',)
+
+
+class Sheikh(BaseModel):
+    name = models.CharField(max_length=255, verbose_name="имя")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'Шейх'
+        verbose_name_plural = 'Шейхи'
+        ordering = ('-created_at',)
+
+class Audio(BaseModel):
+    sheikh = models.ForeignKey(Sheikh, on_delete=models.CASCADE, verbose_name='')
+    chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, blank=True, null=True)
+    verse = models.ForeignKey(Verse, on_delete=models.SET_NULL, blank=True, null=True)
+
+    audio = models.FileField(upload_to="audio/", verbose_name='голос')
+    audio_translate = models.FileField(upload_to='audio/', verbose_name='перевод голоса')
+
+    def __str__(self):
+        return str(self.id) or ''
+
+    class Meta:
+        verbose_name = 'Голос'
+        verbose_name_plural = 'Голоса'
+        ordering = ('-created_at',)
