@@ -152,13 +152,14 @@ LANGUAGE_CODE = 'ru-ru'
 get_text = lambda x: x
 LANGUAGES = {
     'uz': get_text('Uzbek'),
-    'ru': get_text('Russian'),
+    'krl': get_text('Kiril'),
+    'tr': get_text('Turk'),
     'en': get_text('English'),
     'ar': get_text('Arabic')
 }
 
-MODELTRANSLATION_DEFAULT_LANGUAGE = 'ru'
-MODELTRANSLATION_LANGUAGES = ('uz', 'ru', 'en', 'ar')
+MODELTRANSLATION_DEFAULT_LANGUAGE = 'uz'
+MODELTRANSLATION_LANGUAGES = ('uz', 'tr', 'en', 'ar', 'krl')
 
 TIME_ZONE = 'Asia/Tashkent'
 
