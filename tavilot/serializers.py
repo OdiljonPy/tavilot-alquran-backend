@@ -91,16 +91,37 @@ class PostSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'category', 'file', 'description', 'is_published', 'is_premium']
 
 class SheikhSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
     class Meta:
         model = Sheikh
         fields = ['id', 'name']
 
 class AudioSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['audio_translate'] = serializers.CharField(source=f'audio_translate_{language}')
     class Meta:
         model = Audio
         fields = ['id', 'sheikh', 'chapter', 'verse', 'audio', 'audio_translate']
 
 class AboutUsSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
     class Meta:
         model = AboutUs
         fields = ['id', 'description']
