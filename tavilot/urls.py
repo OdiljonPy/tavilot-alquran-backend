@@ -10,4 +10,5 @@ urlpatterns = [
     path('sheikhs/', SheikhViewSet.as_view({'get': 'sheikh_list'}), name='sheikhs'),
     path('about/', AboutUsViewSet.as_view({'get': 'about_us'}), name='about_us'),
     path('verses/', VerseViewSet.as_view({'get': 'get_verses'}), name='verses'),
+    path('sheikh/audio/<int:pk>/', SheikhViewSet.as_view({"get": 'sheikh_audio'}), name='sheikh_audio')
 ]
