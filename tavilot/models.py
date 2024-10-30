@@ -23,7 +23,7 @@ class Verse(BaseModel):
     description = models.TextField(verbose_name="описание")
 
     def __str__(self):
-        return str(self.id) or ''
+        return str(self.id)
 
     class Meta:
         verbose_name = 'Айат'
@@ -38,7 +38,7 @@ class Sales(BaseModel):
     price = models.FloatField(default=0, verbose_name="цена")
 
     def __str__(self):
-        return str(self.id) or ''
+        return str(self.id)
 
     class Meta:
         verbose_name = 'Продажa'
@@ -49,7 +49,7 @@ class AboutUs(BaseModel):
     description = models.TextField(verbose_name="описание")
 
     def __str__(self):
-        return str(self.id) or ''
+        return str(self.id)
 
     class Meta:
         verbose_name = 'О нас'
@@ -78,7 +78,7 @@ class Post(BaseModel):
     is_premium = models.BooleanField(default=False, verbose_name="премиум")
 
     def __str__(self):
-        return str(self.id) or ''
+        return str(self.id)
 
     class Meta:
         verbose_name = 'Пост'
@@ -106,7 +106,7 @@ class Audio(BaseModel):
     audio_translate = models.FileField(upload_to='audio/', verbose_name='перевод голоса')
 
     def __str__(self):
-        return str(self.id) or ''
+        return str(self.id)
 
     class Meta:
         verbose_name = 'Голос'

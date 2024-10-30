@@ -55,7 +55,8 @@ class UserViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED)
 
-        otp = check_otp_attempts(OTP.objects.filter(otp_key=serializer.validated_data.get('otp_key')).first(), serializer.validated_data.get('otp_code'))
+        otp = check_otp_attempts(OTP.objects.filter(otp_key=serializer.validated_data.get('otp_key')).first(),
+                                 serializer.validated_data.get('otp_code'))
 
         user = otp.user
         user.is_verified = True

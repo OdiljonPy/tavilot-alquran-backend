@@ -35,7 +35,7 @@ class User(BaseModel):
 
 class OTP(BaseModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    otp_code = models.IntegerField(default=generate_otp_code, )
+    otp_code = models.IntegerField(default=generate_otp_code)
     otp_key = models.UUIDField(default=uuid.uuid4)
 
     attempts = models.IntegerField(default=0)
