@@ -53,6 +53,7 @@ class AboutUsAdmin(admin.ModelAdmin):
     list_display = ('id',)
     search_fields = ('description',)
 
+
 @admin.register(Audio)
 class AudioAdmin(admin.ModelAdmin):
     list_display = ('id', 'sheikh', 'chapter', 'verse')
