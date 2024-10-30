@@ -42,7 +42,7 @@ class ChapterFullSerializer(serializers.ModelSerializer):
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
         self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
-    verses = VerseSerializer(many=True, read_only=True, source='verse_set')
+    verses = VerseSerializer(many=True, read_only=True, source='chapter_verse')
 
     class Meta:
         model = Chapter
