@@ -103,6 +103,17 @@ class SheikhViewSet(ViewSet):
             data={'result': SheikhSerializer(sheikh, many=True, context={'request': request}).data, 'ok': True},
             status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_summary="Sheikh's audios, pk receive Sheikh id",
+        operation_description="Sheikh's audio, pk receive Sheikh id",
+        responses={200: AudioSerializer(many=True)},
+        tags=['Sheikh']
+    )
+    def sheikh_audio(self, request, pk):
+        audio = Audio.objects.filter(sheikh_id=pk)
+        serializer = AudioSerializer(audio, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
 
 class AboutUsViewSet(ViewSet):
     @swagger_auto_schema(

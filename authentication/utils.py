@@ -2,8 +2,6 @@ import random
 import re
 from datetime import timedelta
 
-import requests
-from django.conf import settings
 from django.contrib.auth.hashers import check_password
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -29,7 +27,7 @@ def generate_otp_code():
 def check_otp(otp):
     first_otp = otp.order_by('created_at').first()
 
-    if timezone.now() - first_otp.created_at > timedelta(hours=12):
+    if first_otp and timezone.now() - first_otp.created_at > timedelta(hours=12):
         otp.delete()
 
     if len(otp) > 3:
@@ -44,14 +42,6 @@ def phone_number_validation(value):
 def otp_expiring(value):
     if timezone.now() - value > timedelta(minutes=3):
         return True
-
-
-def send_telegram_otp_code(otp):
-
-    message = """P/j: Tavilot-alquran\nPhone: {}\nOTP_code {}\nExpire in {}""".format(
-        otp.user.phone_number, otp.otp_code, (otp.created_at + timedelta(minutes=3)).strftime('%H:%M:%S'))
-
-    requests.get(settings.TELEGRAM_API_URL.format(settings.BOT_TOKEN, message, settings.CHANNEL_ID))
 
 
 def check_otp_attempts(otp, otp_code):

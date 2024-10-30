@@ -12,10 +12,25 @@ from exception.exceptions import CustomApiException
 from .models import User, OTP, ResetToken
 from .serializers import UserSerializer, PhoneNumberSerializer, OTPSerializer, OTPTokenSerializer, \
     UserLoginRequestSerializer, TokenSerializer, ChangePasswordRequestSerializer, OTPTokenWithPasswordSerializer
-from .utils import check_otp, send_telegram_otp_code, user_existing, check_otp_attempts
+from .utils import check_otp, user_existing, check_otp_attempts
+from utils.send_message import send_telegram_otp_code
 
 
 class UserViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='User authme',
+        operation_description="User authme",
+        responses={200: UserSerializer()},
+        tags=['User']
+    )
+    def authme(self, request):
+        user = User.objects.filter(id=request.user.id).first()
+        if not user:
+            raise CustomApiException(error_code=ErrorCodes.NOT_FOUND)
+
+        serializer = UserSerializer(user, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
     @swagger_auto_schema(
         operation_summary='Registration a user',
         operation_description='Registration a user',
@@ -34,9 +49,9 @@ class UserViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED)
         validated_user = serializer.save()
-        obj = OTP.objects.create(user_id=validated_user.id)
 
         check_otp(OTP.objects.filter(user_id=validated_user.id))
+        obj = OTP.objects.create(user_id=validated_user.id)
 
         obj.save()
         send_telegram_otp_code(obj)
@@ -63,7 +78,7 @@ class UserViewSet(ViewSet):
         user.save(update_fields=['is_verified'])
 
         OTP.objects.filter(user_id=user.id).delete()
-        return Response({'message': 'Successfully verified.', 'ok': True}, status=status.HTTP_200_OK)
+        return Response({'result': 'Successfully verified.', 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary='Login user',
@@ -108,13 +123,13 @@ class PasswordViewSet(ViewSet):
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT,
                                      message='User does not exist. Go to Register page')
 
-        otp = OTP.objects.create(user_id=user.id)
         if check_otp(OTP.objects.filter(user_id=user.id)):
             raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='To many attempts! Try later.')
 
+        otp = OTP.objects.create(user_id=user.id)
         otp.save()
         send_telegram_otp_code(otp)
-        return Response({'message': {'otp_key': otp.otp_key}, 'ok': True}, status=status.HTTP_201_CREATED)
+        return Response({'result': {'otp_key': otp.otp_key}, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
         operation_summary='Send token for verifying password',
@@ -135,7 +150,7 @@ class PasswordViewSet(ViewSet):
 
         OTP.objects.filter(user_id=otp.user.id).delete()
 
-        return Response(data={'message': {'otp_token': token.token}, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(data={'result': {'token': token.token}, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary='Reset password with token',
@@ -160,7 +175,7 @@ class PasswordViewSet(ViewSet):
 
         serializer.save()
 
-        return Response(data={'message': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary='Change password',
@@ -185,3 +200,5 @@ class PasswordViewSet(ViewSet):
         ResetToken.objects.filter(user_id=user.id).delete()
 
         return Response({'result': validate_data.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
