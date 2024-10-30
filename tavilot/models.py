@@ -1,3 +1,4 @@
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from abstarct_model.base_model import BaseModel
 from tinymce.models import HTMLField
@@ -16,18 +17,18 @@ class Chapter(BaseModel):
         ordering = ('-created_at',)
 
 class Verse(BaseModel):
-    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура')
-    number = models.PositiveIntegerField(verbose_name="порядковый номер айат")
-    text = models.TextField(verbose_name="айат")
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура', related_name='chapter_verse')
+    number = models.PositiveIntegerField(verbose_name="порядковый номер аят")
+    text = models.TextField(verbose_name="аят")
     text_arabic = models.TextField(verbose_name="айат на арабском языке")
-    description = models.TextField(verbose_name="описание")
+    description = models.TextField(verbose_name="толкование аята")
 
     def __str__(self):
         return str(self.id)
 
     class Meta:
-        verbose_name = 'Айат'
-        verbose_name_plural = 'Айаты'
+        verbose_name = 'Аят'
+        verbose_name_plural = 'Аяты'
         ordering = ('-created_at',)
 
 
@@ -46,7 +47,7 @@ class Sales(BaseModel):
         ordering = ('-created_at',)
 
 class AboutUs(BaseModel):
-    description = models.TextField(verbose_name="описание")
+    description = HTMLField(verbose_name='описание')
 
     def __str__(self):
         return str(self.id)
@@ -72,7 +73,8 @@ class Category(BaseModel):
 class Post(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="категория")
-    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True)
+    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
+                            validators=[FileExtensionValidator(['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'])])
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
     is_premium = models.BooleanField(default=False, verbose_name="премиум")
@@ -98,9 +100,9 @@ class Sheikh(BaseModel):
         ordering = ('-created_at',)
 
 class Audio(BaseModel):
-    sheikh = models.ForeignKey(Sheikh, on_delete=models.CASCADE, verbose_name='')
-    chapter = models.ForeignKey(Chapter, on_delete=models.SET_NULL, blank=True, null=True)
-    verse = models.ForeignKey(Verse, on_delete=models.SET_NULL, blank=True, null=True)
+    sheikh = models.ForeignKey(Sheikh, on_delete=models.CASCADE, verbose_name='шейх')
+    chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура')
+    verse = models.ForeignKey(Verse, on_delete=models.CASCADE, verbose_name='аят')
 
     audio = models.FileField(upload_to="audio/", verbose_name='голос')
     audio_translate = models.FileField(upload_to='audio/', verbose_name='перевод голоса')
