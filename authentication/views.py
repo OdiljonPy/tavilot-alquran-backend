@@ -113,7 +113,7 @@ class PasswordViewSet(ViewSet):
     )
     def reset_password(self, request):
 
-        serializer = OTPSerializer(data=request.data, context={'request': request})
+        serializer = PhoneNumberSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
