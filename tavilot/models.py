@@ -4,6 +4,7 @@ from abstarct_model.base_model import BaseModel
 from tinymce.models import HTMLField
 from authentication.models import User
 
+
 class Chapter(BaseModel):
     name = models.CharField(max_length=150, verbose_name="название")
     description = models.TextField(verbose_name="описание")
@@ -16,12 +17,13 @@ class Chapter(BaseModel):
         verbose_name_plural = 'Суры'
         ordering = ('-created_at',)
 
+
 class Verse(BaseModel):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура', related_name='chapter_verse')
     number = models.PositiveIntegerField(verbose_name="порядковый номер аят")
     text = models.TextField(verbose_name="аят")
     text_arabic = models.TextField(verbose_name="айат на арабском языке")
-    description = models.TextField(verbose_name="толкование аята")
+    description = models.TextField(verbose_name="описание аята")
 
     def __str__(self):
         return str(self.id)
@@ -45,6 +47,7 @@ class Sales(BaseModel):
         verbose_name = 'Продажa'
         verbose_name_plural = 'Продажи'
         ordering = ('-created_at',)
+
 
 class AboutUs(BaseModel):
     description = HTMLField(verbose_name='описание')
@@ -99,13 +102,16 @@ class Sheikh(BaseModel):
         verbose_name_plural = 'Шейхи'
         ordering = ('-created_at',)
 
+
 class Audio(BaseModel):
     sheikh = models.ForeignKey(Sheikh, on_delete=models.CASCADE, verbose_name='шейх')
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура')
-    verse = models.ForeignKey(Verse, on_delete=models.CASCADE, verbose_name='аят')
+    verse = models.ForeignKey(Verse, on_delete=models.CASCADE, verbose_name='аят', related_name='verse_audio')
 
-    audio = models.FileField(upload_to="audio/", verbose_name='голос')
-    audio_translate = models.FileField(upload_to='audio/', verbose_name='перевод голоса')
+    audio = models.FileField(upload_to="audio/", verbose_name='голос',
+                             validators=[FileExtensionValidator(['mp3', 'wav', 'flac', 'ogg', 'm4a'])])
+    audio_translate = models.FileField(upload_to='audio/', verbose_name='перевод голоса',
+                                       validators=[FileExtensionValidator(['mp3', 'wav', 'flac', 'ogg', 'm4a'])])
 
     def __str__(self):
         return str(self.id)

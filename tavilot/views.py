@@ -1,17 +1,24 @@
+from django.db.models import Q
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from exception.exceptions import CustomApiException
 from exception.error_message import ErrorCodes
 from rest_framework import status
-from .models import (Chapter, Category, Post, Sheikh, AboutUs, Audio, Verse)
+from drf_yasg import openapi
+from .models import (Chapter, Category, Post, Sheikh, AboutUs, Verse, Audio)
 from .serializers import (
     ChapterFullSerializer, PostSerializer, ChapterListSerializer,
-    CategorySerializer, SheikhSerializer, AboutUsSerializer, VerseUzArabSerializer, AudioSerializer)
+    CategorySerializer, SheikhSerializer, AboutUsSerializer, ChapterUzArabSerializer, VerseSearchSerializer,
+    AudioSerializer,
+    VerseUzArabSerializer)
 from drf_yasg.utils import swagger_auto_schema
 
 
 class ChapterViewSet(ViewSet):
     @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
+        ],
         operation_summary='List of chapters',
         operation_description='List of chapters',
         responses={200: ChapterListSerializer(many=True)},
@@ -30,25 +37,48 @@ class ChapterViewSet(ViewSet):
         tags=['Chapter'],
     )
     def chapter_detail(self, request, pk):
-        chapter = Chapter.objects.prefetch_related('verse_set').filter(id=pk).first()
+        chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(data={'result': ChapterFullSerializer(chapter, context={'request': request}).data, 'ok': True},
                         status=status.HTTP_200_OK)
 
-
-class VerseViewSet(ViewSet):
     @swagger_auto_schema(
-        operation_summary='List of verses',
-        operation_description='List of verses',
-        responses={200: VerseUzArabSerializer(many=True)},
-        tags=['Verse'],
+        manual_parameters=[
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
+        ],
+        operation_summary='Chapter detail with arabic and translated verses',
+        operation_description='Chapter detail with arabic and translated verses',
+        responses={200: ChapterUzArabSerializer()},
+        tags=['Chapter'],
     )
-    def get_verses(self, request, pk):
-        verses = Verse.objects.filter(chapter_id=pk).order_by('number')
+    def chapter_detail_translated_verses(self, request, pk):
+        chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
+        if chapter is None:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(
-            data={'result': VerseUzArabSerializer(verses, many=True, context={'request': request}).data, 'ok': True},
+            data={'result': ChapterUzArabSerializer(chapter, context={'request': request}).data, 'ok': True},
             status=status.HTTP_200_OK)
+
+
+class VerseFilterViewSet(ViewSet):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
+        ],
+        operation_summary='Searched verse with chapter id and name',
+        operation_description='Searched verse with chapter id and name',
+        responses={200: VerseSearchSerializer(many=True)},
+        tags=['VerseSearch'],
+    )
+    def search_verse(self, request):
+        filter_ = Q()
+        q = request.query_params.get('q', None)
+        if q is not None:
+            filter_ &= (Q(text__icontains=q) | Q(text_arabic__icontains=q) | Q(number__icontains=q))
+        verses = Verse.objects.select_related('chapter').filter(filter_)
+        return Response(data={'result': VerseSearchSerializer(verses, many=True).data, 'ok': True},
+                        status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(ViewSet):
