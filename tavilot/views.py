@@ -74,7 +74,7 @@ class VerseFilterViewSet(ViewSet):
     def search_verse(self, request):
         filter_ = Q()
         q = request.query_params.get('q', None)
-        if q is not None:
+        if q:
             filter_ &= (Q(text__icontains=q) | Q(text_arabic__icontains=q) | Q(number__icontains=q))
         verses = Verse.objects.select_related('chapter').filter(filter_)
         return Response(data={'result': VerseSearchSerializer(verses, many=True).data, 'ok': True},

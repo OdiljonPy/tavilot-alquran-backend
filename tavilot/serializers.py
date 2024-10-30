@@ -86,7 +86,7 @@ class VerseSearchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Verse
-        fields = ['id', 'number', 'text_arabic', 'chapter_id', 'chapter_name']
+        fields = ['id', 'number', 'chapter_id', 'chapter_name']
 
 
 class ChapterUzArabSerializer(serializers.ModelSerializer):
