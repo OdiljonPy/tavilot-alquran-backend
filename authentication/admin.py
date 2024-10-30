@@ -2,9 +2,6 @@ from django.contrib import admin
 
 from .models import User, OTP, ResetToken
 
-from django.contrib.auth.hashers import make_password
-
-
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('id', 'phone_number', 'email', 'first_name')
