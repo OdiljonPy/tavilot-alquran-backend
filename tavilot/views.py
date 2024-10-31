@@ -8,17 +8,13 @@ from drf_yasg import openapi
 from .models import (Chapter, Category, Post, Sheikh, AboutUs, Verse, Audio)
 from .serializers import (
     ChapterFullSerializer, PostSerializer, ChapterListSerializer,
-    CategorySerializer, SheikhSerializer, AboutUsSerializer, ChapterUzArabSerializer, VerseSearchSerializer,
-    AudioSerializer,
-    VerseUzArabSerializer)
+    CategorySerializer, SheikhSerializer, AboutUsSerializer, ChapterUzArabSerializer,
+    VerseSearchSerializer, AudioSerializer)
 from drf_yasg.utils import swagger_auto_schema
 
 
 class ChapterViewSet(ViewSet):
     @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
-        ],
         operation_summary='List of chapters',
         operation_description='List of chapters',
         responses={200: ChapterListSerializer(many=True)},
@@ -44,9 +40,6 @@ class ChapterViewSet(ViewSet):
                         status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
-        ],
         operation_summary='Chapter detail with arabic and translated verses',
         operation_description='Chapter detail with arabic and translated verses',
         responses={200: ChapterUzArabSerializer()},
