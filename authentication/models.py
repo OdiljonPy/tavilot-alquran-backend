@@ -14,7 +14,7 @@ USER_RATE = (
 class User(BaseModel):
     phone_number = models.CharField(validators=[phone_number_validation], verbose_name='Номер телефона')
     password = models.CharField(max_length=125, verbose_name='Пороль')
-    email = models.CharField(max_length=125, verbose_name='Электронная почта')
+    email = models.CharField(max_length=125, blank=True, null=True, verbose_name='Электронная почта')
     rate = models.PositiveIntegerField(choices=USER_RATE, default=1, verbose_name="тариф")
 
     login_time = models.DateTimeField(null=True, blank=True, verbose_name='Время входа')

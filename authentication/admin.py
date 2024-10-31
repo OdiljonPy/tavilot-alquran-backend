@@ -4,7 +4,7 @@ from .models import User, OTP, ResetToken
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'phone_number', 'email', 'first_name')
+    list_display = ('id', 'phone_number', 'email', 'first_name', 'is_verified')
     list_display_links = ('id', 'phone_number')
     search_fields = ('phone_number', 'first_name', 'email')
     list_filter = ('rate', 'is_verified')
@@ -14,8 +14,10 @@ class UserAdmin(admin.ModelAdmin):
 class OTPAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'attempts')
     list_display_links = ('id', 'user')
+    readonly_fields = ('user', 'attempts', 'otp_code', 'otp_key')
 
 @admin.register(ResetToken)
 class ResetTokenAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'token')
     list_display_links = ('id', 'user')
+    readonly_fields = ('user', 'token')
