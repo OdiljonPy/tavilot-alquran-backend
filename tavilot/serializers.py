@@ -132,7 +132,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'category', 'file', 'description', 'is_published', 'is_premium']
+        fields = ['id', 'title', 'category', 'file', 'description', 'is_published', 'is_premium', 'image']
 
 
 class SheikhSerializer(serializers.ModelSerializer):
