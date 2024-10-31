@@ -23,7 +23,7 @@ class UserViewSet(ViewSet):
         responses={200: UserSerializer()},
         tags=['User']
     )
-    def authme(self, request):
+    def auth_me(self, request):
         user = User.objects.filter(id=request.user.id).first()
         if not user:
             raise CustomApiException(error_code=ErrorCodes.NOT_FOUND)

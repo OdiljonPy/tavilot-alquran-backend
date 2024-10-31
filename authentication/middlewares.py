@@ -8,7 +8,7 @@ from utils.check_token import validate_token
 class AuthenticationBaseRedirectMiddleware(MiddlewareMixin):
     def process_request(self, request):
         exclude_target_urls = [
-            reverse('chapter_detail', kwargs = {'pk': 3})]
+            reverse('chapter_detail', kwargs = {'pk': 3}), reverse('auth_me')]
 
         if not request.path.startswith('/api/v1/') and request.path in exclude_target_urls:
             payload = validate_token(request.headers.get('Authorization'))
