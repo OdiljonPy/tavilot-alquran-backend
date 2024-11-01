@@ -15,8 +15,8 @@ class VerseMiddleware(MiddlewareMixin):
         if request.path in target_urls:
             rate = get_rate(request.headers.get('Authorization'))
 
-            if rate in [2]:
+            if rate and rate in [2]:
                 return ChapterViewSet.as_view({'get': 'chapter_detail'})(request, *view_args, **view_kwargs)
-            if rate in [1]:
+            if rate and rate in [1]:
                 return ChapterViewSet.as_view({'get': 'chapter_detail_translated_verses'})(request, *view_args, **view_kwargs)
             return JsonResponse(data={'result': 'You do not have permission', 'ok': False}, status=status.HTTP_403_FORBIDDEN)
