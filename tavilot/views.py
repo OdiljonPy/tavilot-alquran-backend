@@ -11,7 +11,6 @@ from .serializers import (
     CategorySerializer, SheikhSerializer, AboutUsSerializer, ChapterUzArabSerializer,
     VerseSearchSerializer, AudioSerializer)
 from drf_yasg.utils import swagger_auto_schema
-from django.db.models import Prefetch
 
 
 class ChapterViewSet(ViewSet):
@@ -34,8 +33,7 @@ class ChapterViewSet(ViewSet):
         tags=['Chapter'],
     )
     def chapter_detail(self, request, pk):
-        chapter = Chapter.objects.prefetch_related(Prefetch(
-            'chapter_verse', queryset=Verse.objects.prefetch_related('verse_audio'))).filter(id=pk).first()
+        chapter = Chapter.objects.prefetch_related('chapter_verse', 'chapter_verse__verse_audio').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(data={'result': ChapterFullSerializer(chapter, context={'request': request}).data, 'ok': True},
@@ -48,8 +46,7 @@ class ChapterViewSet(ViewSet):
         tags=['Chapter'],
     )
     def chapter_detail_translated_verses(self, request, pk):
-        chapter = Chapter.objects.prefetch_related(Prefetch(
-            'chapter_verse', queryset=Verse.objects.prefetch_related('verse_audio'))).filter(id=pk).first()
+        chapter = Chapter.objects.prefetch_related('chapter_verse', 'chapter_verse__verse_audio').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(
