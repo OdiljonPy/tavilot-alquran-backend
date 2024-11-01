@@ -20,9 +20,9 @@ class Chapter(BaseModel):
 
 class Verse(BaseModel):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура', related_name='chapter_verse')
-    number = models.PositiveIntegerField(verbose_name="порядковый номер аят")
-    text = models.TextField(verbose_name="аят")
-    text_arabic = models.TextField(verbose_name="айат на арабском языке")
+    number = models.PositiveIntegerField(verbose_name="порядковый номер аят", db_index = True)
+    text = models.TextField(verbose_name="аят", db_index = True)
+    text_arabic = models.TextField(verbose_name="айат на арабском языке", db_index = True)
     description = models.TextField(verbose_name="описание аята")
 
     def __str__(self):
@@ -32,6 +32,11 @@ class Verse(BaseModel):
         verbose_name = 'Аят'
         verbose_name_plural = 'Аяты'
         ordering = ('-created_at',)
+        indexes = [
+            models.Index(fields=['number'], name='number_index'),
+            models.Index(fields=['text'], name='text_index'),
+            models.Index(fields=['text_arabic'], name='text_arabic_index'),
+        ]
 
 
 class Sales(BaseModel):
