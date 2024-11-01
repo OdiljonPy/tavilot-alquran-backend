@@ -9,11 +9,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from exception.error_message import ErrorCodes
 from exception.exceptions import CustomApiException
+from utils.send_message import send_telegram_otp_code
 from .models import User, OTP, ResetToken
 from .serializers import UserSerializer, PhoneNumberSerializer, OTPSerializer, OTPTokenSerializer, \
     UserLoginRequestSerializer, TokenSerializer, ChangePasswordRequestSerializer, OTPTokenWithPasswordSerializer
 from .utils import check_otp, user_existing, check_otp_attempts
-from utils.send_message import send_telegram_otp_code
 
 
 class UserViewSet(ViewSet):
@@ -23,7 +23,7 @@ class UserViewSet(ViewSet):
         responses={200: UserSerializer()},
         tags=['User']
     )
-    def authme(self, request):
+    def auth_me(self, request):
         user = User.objects.filter(id=request.user.id).first()
         if not user:
             raise CustomApiException(error_code=ErrorCodes.NOT_FOUND)
@@ -144,7 +144,8 @@ class PasswordViewSet(ViewSet):
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
-        otp = check_otp_attempts(OTP.objects.filter(otp_key=serializer.validated_data.get('otp_key')).first(), serializer.validated_data.get('otp_code'))
+        otp = check_otp_attempts(OTP.objects.filter(otp_key=serializer.validated_data.get('otp_key')).first(),
+                                 serializer.validated_data.get('otp_code'))
 
         token = ResetToken.objects.create(user_id=otp.user.id)
 
@@ -193,12 +194,11 @@ class PasswordViewSet(ViewSet):
         if not check_password(serializer.validated_data.get('old_password'), user.password):
             raise CustomApiException(error_code=ErrorCodes.INCORRECT_PASSWORD)
 
-        validate_data = UserSerializer(user, data={'password': serializer.validated_data.get('new_password')}, partial=True)
+        validate_data = UserSerializer(user, data={'password': serializer.validated_data.get('new_password')},
+                                       partial=True)
         if not validate_data.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=validate_data.errors)
         validate_data.save()
         ResetToken.objects.filter(user_id=user.id).delete()
 
         return Response({'result': validate_data.data, 'ok': True}, status=status.HTTP_200_OK)
-
-

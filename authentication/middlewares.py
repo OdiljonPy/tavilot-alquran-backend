@@ -6,15 +6,17 @@ from utils.check_token import validate_token
 
 
 class AuthenticationBaseRedirectMiddleware(MiddlewareMixin):
-    def process_request(self, request):
-        exclude_target_urls = [
-            reverse('register'), reverse('verify'),
-            reverse('login'), reverse('reset_password'),
-            reverse('send_token_password'),
-            reverse('verify_with_token')]
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        chapter_id = view_kwargs.get('pk')
+        exclude_target_urls = [reverse('auth_me')]
+        if chapter_id:
+            exclude_target_urls.append(reverse('chapter_detail', kwargs={'pk': chapter_id}))
 
-        if request.path.startswith('/api/v1/') and request.path not in exclude_target_urls:
+        if request.path.startswith('/api/v1/') and request.path in exclude_target_urls:
             payload = validate_token(request.headers.get('Authorization'))
 
             if payload is None:
                 return JsonResponse(data={'result': "", "error": "Unauthorized access", 'ok': False}, status=401)
+            return view_func(request, *view_args, **view_kwargs)
+
+        return None
