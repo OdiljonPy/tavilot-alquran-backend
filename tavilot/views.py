@@ -33,7 +33,7 @@ class ChapterViewSet(ViewSet):
         tags=['Chapter'],
     )
     def chapter_detail(self, request, pk):
-        chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
+        chapter = Chapter.objects.prefetch_related('chapter_verse', 'chapter_verse__verse_audio').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(data={'result': ChapterFullSerializer(chapter, context={'request': request}).data, 'ok': True},
@@ -46,7 +46,7 @@ class ChapterViewSet(ViewSet):
         tags=['Chapter'],
     )
     def chapter_detail_translated_verses(self, request, pk):
-        chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
+        chapter = Chapter.objects.prefetch_related('chapter_verse', 'chapter_verse__verse_audio').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(
@@ -54,7 +54,7 @@ class ChapterViewSet(ViewSet):
             status=status.HTTP_200_OK)
 
 
-class VerseFilterViewSet(ViewSet):
+class VerseSearchViewSet(ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
