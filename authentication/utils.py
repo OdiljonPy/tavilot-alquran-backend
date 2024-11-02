@@ -30,7 +30,7 @@ def check_otp(otp):
     if first_otp and timezone.now() - first_otp.created_at > timedelta(hours=12):
         otp.delete()
 
-    if len(otp) > 3:
+    if len(otp) > 2:
         raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message='To many attempts! Try later.')
 
 
