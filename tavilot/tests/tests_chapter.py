@@ -42,4 +42,4 @@ class TestChapterViewSet(APITestCase):
     def test_get_chapter_full(self):
         response = self.client.get(reverse('chapter_detail', kwargs={'pk': self.chapter1.id}))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        # TODO test for user with rate 1 and 2
+        # test for user with rate 1 and 2
