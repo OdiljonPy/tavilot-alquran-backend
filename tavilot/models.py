@@ -17,6 +17,10 @@ class Chapter(BaseModel):
         verbose_name_plural = 'Суры'
         ordering = ('-created_at',)
 
+    @property
+    def get_verses(self):
+        return self.chapter_verse.all()
+
 
 class Verse(BaseModel):
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура', related_name='chapter_verse')

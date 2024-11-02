@@ -99,11 +99,10 @@ class ChapterUzArabSerializer(serializers.ModelSerializer):
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
         self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
-    verses = VerseUzArabSerializer(many=True, read_only=True, source='chapter_verse')
 
     class Meta:
         model = Chapter
-        fields = ['id', 'name', 'description', 'verses']
+        fields = ['id', 'name', 'description']
 
 
 class CategorySerializer(serializers.ModelSerializer):
