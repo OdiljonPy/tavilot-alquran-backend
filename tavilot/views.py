@@ -54,7 +54,7 @@ class ChapterViewSet(ViewSet):
             status=status.HTTP_200_OK)
 
 
-class VerseFilterViewSet(ViewSet):
+class VerseSearchViewSet(ViewSet):
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
