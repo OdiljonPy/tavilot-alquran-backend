@@ -8,7 +8,7 @@ from utils.check_token import validate_token
 class AuthenticationBaseRedirectMiddleware(MiddlewareMixin):
     def process_view(self, request, view_func, view_args, view_kwargs):
         chapter_id = view_kwargs.get('pk')
-        exclude_target_urls = [reverse('auth_me')]
+        exclude_target_urls = [reverse('auth_me'), reverse('change_password')]
         if chapter_id:
             exclude_target_urls.append(reverse('chapter_detail', kwargs={'pk': chapter_id}))
 
