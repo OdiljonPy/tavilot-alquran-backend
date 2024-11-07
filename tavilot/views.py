@@ -5,11 +5,11 @@ from exception.exceptions import CustomApiException
 from exception.error_message import ErrorCodes
 from rest_framework import status
 from drf_yasg import openapi
-from .models import (Chapter, Category, Post, Sheikh, AboutUs, Verse, Audio)
+from .models import (Chapter, Category, Post, AboutUs, Verse)
 from .serializers import (
     ChapterFullSerializer, PostSerializer, ChapterListSerializer,
-    CategorySerializer, SheikhSerializer, AboutUsSerializer, ChapterUzArabSerializer,
-    VerseSearchSerializer, AudioSerializer)
+    CategorySerializer, AboutUsSerializer, ChapterUzArabSerializer,
+    VerseSearchSerializer, VerseArabSerializer)
 from drf_yasg.utils import swagger_auto_schema
 
 
@@ -33,7 +33,7 @@ class ChapterViewSet(ViewSet):
         tags=['Chapter'],
     )
     def chapter_detail(self, request, pk):
-        chapter = Chapter.objects.prefetch_related('chapter_verse', 'chapter_verse__verse_audio').filter(id=pk).first()
+        chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(data={'result': ChapterFullSerializer(chapter, context={'request': request}).data, 'ok': True},
@@ -46,7 +46,7 @@ class ChapterViewSet(ViewSet):
         tags=['Chapter'],
     )
     def chapter_detail_translated_verses(self, request, pk):
-        chapter = Chapter.objects.prefetch_related('chapter_verse', 'chapter_verse__verse_audio').filter(id=pk).first()
+        chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(
@@ -54,7 +54,19 @@ class ChapterViewSet(ViewSet):
             status=status.HTTP_200_OK)
 
 
-class VerseSearchViewSet(ViewSet):
+class VerseViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='Verses arabic',
+        operation_description='Arabic version of verses',
+        responses={200: VerseArabSerializer()},
+        tags=['Verse'],
+    )
+    def chapter_verses(self, request, pk):
+        verses = Verse.objects.select_related('chapter').filter(chapter_id=pk)
+        serializer = VerseArabSerializer(verses, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
@@ -62,7 +74,7 @@ class VerseSearchViewSet(ViewSet):
         operation_summary='Searched verse with chapter id and name',
         operation_description='Searched verse with chapter id and name',
         responses={200: VerseSearchSerializer(many=True)},
-        tags=['VerseSearch'],
+        tags=['Verse'],
     )
     def search_verse(self, request):
         filter_ = Q()
@@ -111,31 +123,6 @@ class PostViewSet(ViewSet):
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         return Response(data={'result': PostSerializer(data, context={'request': request}).data, 'ok': True},
                         status=status.HTTP_200_OK)
-
-
-class SheikhViewSet(ViewSet):
-    @swagger_auto_schema(
-        operation_summary='List of Sheikh',
-        operation_description='List of Sheikh',
-        responses={200: SheikhSerializer(many=True)},
-        tags=['Sheikh'],
-    )
-    def sheikh_list(self, request):
-        sheikh = Sheikh.objects.all()
-        return Response(
-            data={'result': SheikhSerializer(sheikh, many=True, context={'request': request}).data, 'ok': True},
-            status=status.HTTP_200_OK)
-
-    @swagger_auto_schema(
-        operation_summary="Sheikh's audios, pk receive Sheikh id",
-        operation_description="Sheikh's audio, pk receive Sheikh id",
-        responses={200: AudioSerializer(many=True)},
-        tags=['Sheikh']
-    )
-    def sheikh_audio(self, request, pk):
-        audio = Audio.objects.filter(sheikh_id=pk)
-        serializer = AudioSerializer(audio, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class AboutUsViewSet(ViewSet):
