@@ -1,10 +1,6 @@
 from django.contrib import admin
-from .models import Chapter, Verse, Post, Category, Sheikh, AboutUs, Audio, SubCategory
+from .models import Chapter, Verse, Post, Category, AboutUs, SubCategory
 
-
-class AudioTabularInline(admin.TabularInline):
-    model = Audio
-    extra = 1
 
 
 class VerseTabularInline(admin.TabularInline):
@@ -31,7 +27,6 @@ class VerseAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'chapter', 'text', 'text_arabic')
     search_fields = ('text', 'text_arabic')
     list_filter = ('chapter',)
-    inlines = [AudioTabularInline]
 
 
 @admin.register(Category)
@@ -50,21 +45,8 @@ class PostAdmin(admin.ModelAdmin):
     list_filter = ('category', 'is_published', 'is_premium')
 
 
-@admin.register(Sheikh)
-class SheikhAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    list_display_links = ('id', 'name')
-    search_fields = ('name',)
-    inlines = [AudioTabularInline]
-
 
 @admin.register(AboutUs)
 class AboutUsAdmin(admin.ModelAdmin):
     list_display = ('id',)
     search_fields = ('description',)
-
-
-@admin.register(Audio)
-class AudioAdmin(admin.ModelAdmin):
-    list_display = ('id', 'sheikh', 'chapter', 'verse')
-    list_display_links = ('id', 'verse')
