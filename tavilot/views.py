@@ -71,8 +71,8 @@ class VerseViewSet(ViewSet):
         manual_parameters=[
             openapi.Parameter(name='q', in_=openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
         ],
-        operation_summary='Searched verse with chapter id and name',
-        operation_description='Searched verse with chapter id and name',
+        operation_summary='Verse search',
+        operation_description='Verse search with number, verse and verse arabic',
         responses={200: VerseSearchSerializer(many=True)},
         tags=['Verse'],
     )
