@@ -1,9 +1,15 @@
 from django.contrib import admin
-from .models import Chapter, Verse, Post, Category, AboutUs
+from .models import Chapter, Verse, Post, Category, AboutUs, SubCategory
+
 
 
 class VerseTabularInline(admin.TabularInline):
     model = Verse
+    extra = 1
+
+
+class SubCategoryTabularInline(admin.TabularInline):
+    model = SubCategory
     extra = 1
 
 
@@ -28,6 +34,7 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
+    inlines = [SubCategoryTabularInline]
 
 
 @admin.register(Post)
@@ -36,6 +43,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'category', 'is_published')
     search_fields = ('title', 'description')
     list_filter = ('category', 'is_published', 'is_premium')
+
 
 
 @admin.register(AboutUs)
