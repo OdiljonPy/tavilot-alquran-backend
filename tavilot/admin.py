@@ -1,12 +1,19 @@
 from django.contrib import admin
-from .models import Chapter, Verse, Post, Category, Sheikh, AboutUs, Audio
+from .models import Chapter, Verse, Post, Category, Sheikh, AboutUs, Audio, SubCategory
+
 
 class AudioTabularInline(admin.TabularInline):
     model = Audio
     extra = 1
 
+
 class VerseTabularInline(admin.TabularInline):
     model = Verse
+    extra = 1
+
+
+class SubCategoryTabularInline(admin.TabularInline):
+    model = SubCategory
     extra = 1
 
 
@@ -32,6 +39,7 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
+    inlines = [SubCategoryTabularInline]
 
 
 @admin.register(Post)
@@ -41,12 +49,14 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description')
     list_filter = ('category', 'is_published', 'is_premium')
 
+
 @admin.register(Sheikh)
 class SheikhAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
     inlines = [AudioTabularInline]
+
 
 @admin.register(AboutUs)
 class AboutUsAdmin(admin.ModelAdmin):

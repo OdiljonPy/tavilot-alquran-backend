@@ -1,4 +1,4 @@
-from .models import Chapter, Verse, Category, Post, Sheikh, Audio, AboutUs
+from .models import Chapter, Verse, Category, Post, Sheikh, Audio, AboutUs, SubCategory
 from rest_framework import serializers
 from config import settings
 
@@ -106,7 +106,7 @@ class ChapterUzArabSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'verses']
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class SubCategorySerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
@@ -116,8 +116,24 @@ class CategorySerializer(serializers.ModelSerializer):
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
 
     class Meta:
+        model = SubCategory
+        fields = ['id', "category", 'name']
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
+    subcategory = SubCategorySerializer(many=True, read_only=True, source='post_subcategory')
+
+    class Meta:
         model = Category
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'subcategory']
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -132,7 +148,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'category', 'file', 'description', 'is_published', 'is_premium', 'image']
+        fields = ['id', 'title', 'category', 'sub_category', 'file', 'description', 'is_published', 'is_premium',
+                  'image']
 
 
 class SheikhSerializer(serializers.ModelSerializer):
