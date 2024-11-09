@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Chapter, Verse, Post, Category, AboutUs, SubCategory
+from .models import Chapter, Verse, Post, Category, AboutUs, SubCategory, Juz
 
 
 
@@ -50,3 +50,9 @@ class PostAdmin(admin.ModelAdmin):
 class AboutUsAdmin(admin.ModelAdmin):
     list_display = ('id',)
     search_fields = ('description',)
+
+
+@admin.register(Juz)
+class JuzAdmin(admin.ModelAdmin):
+    list_display = ('id', 'number')
+    list_display_links = ('id', 'number')

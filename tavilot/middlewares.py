@@ -2,21 +2,21 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.utils.deprecation import MiddlewareMixin
 from utils.check_token import get_rate
-from tavilot.views import ChapterViewSet
+from tavilot.views import ChapterViewSet, JuzViewSet
 from rest_framework import status
 
 
 class VerseMiddleware(MiddlewareMixin):
     def process_view(self, request, view_func, view_args, view_kwargs):
-        chapter_id = view_kwargs.get('pk')
-        if chapter_id is None:
+        primary_key = view_kwargs.get('pk')
+        if not primary_key:
             return
-        target_urls = reverse(viewname="chapter_detail", kwargs={'pk': chapter_id})
-        if request.path in target_urls:
+        chapter_detail_url = reverse("chapter_detail", kwargs={'pk': primary_key})
+        full_juz_detail_url = reverse("full_juz_detail", kwargs={'pk': primary_key})
+        if request.path in [chapter_detail_url, full_juz_detail_url]:
             rate = get_rate(request.headers.get('Authorization'))
-
-            if rate and rate in [2]:
+            if request.path == chapter_detail_url and rate == 2:
                 return ChapterViewSet.as_view({'get': 'chapter_detail'})(request, *view_args, **view_kwargs)
-            if rate and rate in [1]:
-                return ChapterViewSet.as_view({'get': 'chapter_detail_translated_verses'})(request, *view_args, **view_kwargs)
-            return JsonResponse(data={'result': 'You do not have permission', 'ok': False}, status=status.HTTP_403_FORBIDDEN)
+            elif request.path == full_juz_detail_url and rate == 2:
+                return JuzViewSet.as_view({'get': 'get_juz_detail_full'})(request, *view_args, **view_kwargs)
+        return view_func(request, *view_args, **view_kwargs)

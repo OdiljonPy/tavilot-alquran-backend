@@ -1,4 +1,4 @@
-from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory
+from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory, Juz
 from rest_framework import serializers
 from config import settings
 
@@ -59,9 +59,14 @@ class VerseUzArabSerializer(serializers.ModelSerializer):
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['text'] = serializers.CharField(source=f'text_{language}')
 
+    description = serializers.SerializerMethodField()
+
     class Meta:
         model = Verse
-        fields = ['id', 'chapter', 'number', 'text', 'text_arabic']
+        fields = ['id', 'chapter', 'number', 'text', 'text_arabic', 'description']
+
+    def get_description(self, obj):
+        return
 
 
 class VerseSearchSerializer(serializers.ModelSerializer):
@@ -149,7 +154,190 @@ class AboutUsSerializer(serializers.ModelSerializer):
         model = AboutUs
         fields = ['id', 'description']
 
+
+class JuzSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+
+    class Meta:
+        model = Juz
+        fields = ['id', 'number', 'title']
+
+
 class VerseArabSerializer(serializers.ModelSerializer):
     class Meta:
         model = Verse
-        fields = ['id', 'chapter', 'number', 'text_arabic']
+        fields = ['id', 'juz', 'chapter', 'number', 'text_arabic']
+
+
+class ChapterArabSerializer(serializers.ModelSerializer):
+    verses = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
+    class Meta:
+        model = Chapter
+        fields = ['id', 'juz', 'name', 'description', 'number', 'verses']
+
+    def get_verses(self, obj):
+        juz = self.context.get('juz')
+        if juz:
+            verses = obj.chapter_verse.filter(juz=juz)
+            return VerseArabSerializer(verses, many=True).data
+        return []
+
+
+class JuzArabSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+
+    chapters = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Juz
+        fields = ['id', 'number', 'title', 'chapters']
+
+    def get_chapters(self, obj):
+        chapters = obj.juz_chapter.all()
+        return ChapterArabSerializer(chapters, many=True, context={'juz': obj}).data
+
+
+class VerseUzArabJuzSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['text'] = serializers.CharField(source=f'text_{language}')
+
+    description = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Verse
+        fields = ['id', 'juz', 'chapter', 'number', 'text', 'text_arabic', 'description']
+
+    def get_description(self, obj):
+        return
+
+
+class ChapterUzArabJuzSerializer(serializers.ModelSerializer):
+    verses = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+
+    class Meta:
+        model = Chapter
+        fields = ['id', 'juz', 'name', 'description', 'number', 'verses']
+
+    def get_verses(self, obj):
+        juz = self.context.get('juz')
+        if juz:
+            verses = obj.chapter_verse.filter(juz=juz)
+            return VerseUzArabJuzSerializer(verses, many=True).data
+        return []
+
+
+class JuzUzArabSerializer(serializers.ModelSerializer):
+    chapters = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+
+    class Meta:
+        model = Juz
+        fields = ['id', 'number', 'title', 'chapters']
+
+    def get_chapters(self, obj):
+        chapters = obj.juz_chapter.all()
+        return ChapterUzArabJuzSerializer(chapters, many=True, context={'juz': obj}).data
+
+
+class VerseFullJuzSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['text'] = serializers.CharField(source=f'text_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+        print(f'description_{language}')
+
+    class Meta:
+        model = Verse
+        fields = ['id', 'juz', 'chapter', 'number', 'text', 'text_arabic', 'description']
+
+
+class ChapterFullJuzSerializer(serializers.ModelSerializer):
+    verses = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+        print(f'description_{language}')
+
+    class Meta:
+        model = Chapter
+        fields = ['id', 'juz', 'name', 'description', 'number', 'verses']
+
+    def get_verses(self, obj):
+        juz = self.context.get('juz')
+        if juz:
+            verses = obj.chapter_verse.filter(juz=juz)
+            return VerseFullJuzSerializer(verses, many=True).data
+        return []
+
+
+class JuzFullSerializer(serializers.ModelSerializer):
+    chapters = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
+
+    class Meta:
+        model = Juz
+        fields = ['id', 'number', 'title', 'chapters']
+
+    def get_chapters(self, obj):
+        chapters = obj.juz_chapter.all()
+        return ChapterFullJuzSerializer(chapters, many=True, context={'juz': obj}).data
