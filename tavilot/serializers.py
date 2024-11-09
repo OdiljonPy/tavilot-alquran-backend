@@ -1,20 +1,6 @@
-from .models import Chapter, Verse, Category, Post, Sheikh, Audio, AboutUs
+from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory
 from rest_framework import serializers
 from config import settings
-
-
-class AudioSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get('request')
-        language = 'uz'
-        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
-            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
-        self.fields['audio_translate'] = serializers.CharField(source=f'audio_translate_{language}')
-
-    class Meta:
-        model = Audio
-        fields = ['id', 'sheikh', 'chapter', 'verse', 'audio', 'audio_translate']
 
 
 class VerseSerializer(serializers.ModelSerializer):
@@ -73,11 +59,9 @@ class VerseUzArabSerializer(serializers.ModelSerializer):
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['text'] = serializers.CharField(source=f'text_{language}')
 
-    audios = AudioSerializer(many=True, read_only=True, source='verse_audio')
-
     class Meta:
         model = Verse
-        fields = ['id', 'chapter', 'number', 'text', 'text_arabic', 'audios']
+        fields = ['id', 'chapter', 'number', 'text', 'text_arabic']
 
 
 class VerseSearchSerializer(serializers.ModelSerializer):
@@ -106,7 +90,7 @@ class ChapterUzArabSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'verses']
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class SubCategorySerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
@@ -116,8 +100,24 @@ class CategorySerializer(serializers.ModelSerializer):
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
 
     class Meta:
+        model = SubCategory
+        fields = ['id', "category", 'name']
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
+    subcategory = SubCategorySerializer(many=True, read_only=True, source='post_subcategory')
+
+    class Meta:
         model = Category
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'subcategory']
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -132,21 +132,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'category', 'file', 'description', 'is_published', 'is_premium', 'image']
-
-
-class SheikhSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get('request')
-        language = 'uz'
-        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
-            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
-        self.fields['name'] = serializers.CharField(source=f'name_{language}')
-
-    class Meta:
-        model = Sheikh
-        fields = ['id', 'name']
+        fields = ['id', 'title', 'category', 'sub_category', 'file', 'description', 'is_published', 'is_premium',
+                  'image']
 
 
 class AboutUsSerializer(serializers.ModelSerializer):
@@ -161,3 +148,8 @@ class AboutUsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AboutUs
         fields = ['id', 'description']
+
+class VerseArabSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Verse
+        fields = ['id', 'chapter', 'number', 'text_arabic']
