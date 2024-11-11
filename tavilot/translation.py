@@ -1,5 +1,5 @@
 from modeltranslation.translator import translator, TranslationOptions
-from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory
+from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory, Juz
 
 
 class ChapterTranslationOptions(TranslationOptions):
@@ -26,6 +26,9 @@ class AboutUsTranslationOptions(TranslationOptions):
 class SubCategoryTranslationOptions(TranslationOptions):
     fields = ('name',)
 
+class JuzTranslationOptions(TranslationOptions):
+    fields = ('title',)
+
 
 translator.register(SubCategory, SubCategoryTranslationOptions)
 translator.register(Chapter, ChapterTranslationOptions)
@@ -33,3 +36,4 @@ translator.register(Verse, VerseTranslationOptions)
 translator.register(Category, CategoryTranslationOptions)
 translator.register(Post, PostTranslationOptions)
 translator.register(AboutUs, AboutUsTranslationOptions)
+translator.register(Juz, JuzTranslationOptions)
