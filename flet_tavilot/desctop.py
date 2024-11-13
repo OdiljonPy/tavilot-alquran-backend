@@ -1,26 +1,15 @@
 import flet as ft
 import os
-
+from .utils.api_responses import validate_phone_number
 
 def main(page):
     page.adaptive = True
     page.theme_mode = ft.ThemeMode.LIGHT
     TC = '#E9BE5F'
 
-    # Function to validate phone number input
-    def validate_phone_number():
-        phone_number = phone_input.value
-        if phone_number.isdigit() and len(phone_number) == 9:  # Basic validation
-            page.update()
-            open_next_page()
-        else:
-            result.value = "Invalid phone number. Please enter Uzbek number."
-            result.color = ft.colors.RED
-        page.update()
-
     # Event handler for submit event in the phone input field
     def on_submit(e):
-        validate_phone_number()
+        validate_phone_number(phone_input)
 
     # Function to open the next page after validation
     def open_next_page():
@@ -53,7 +42,7 @@ def main(page):
             phone_input,
             ft.OutlinedButton(
                 text="Davom etish",
-                on_click=lambda e: validate_phone_number(),  # Link the button to validation
+                on_click=lambda e: validate_phone_number(phone_input),  # Link the button to validation
                 width=400,
                 height=60,
                 style=ft.ButtonStyle(
