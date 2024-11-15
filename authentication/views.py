@@ -85,6 +85,7 @@ class UserViewSet(ViewSet):
         operation_description='Login user',
         request_body=UserLoginRequestSerializer,
         responses={200: TokenSerializer()},
+        tags=['User']
     )
     def login(self, request):
         login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -110,6 +111,7 @@ class PasswordViewSet(ViewSet):
         operation_description='Send opt code',
         request_body=PhoneNumberSerializer,
         responses={200: OTPSerializer()},
+        tags=['User']
     )
     def reset_password(self, request):
 
@@ -158,6 +160,7 @@ class PasswordViewSet(ViewSet):
         operation_description='Reset password with token',
         request_body=OTPTokenWithPasswordSerializer,
         responses={200: UserSerializer()},
+        tags=['User']
     )
     def verify_with_token(self, request):
 
@@ -183,11 +186,12 @@ class PasswordViewSet(ViewSet):
         operation_description='Change password',
         request_body=ChangePasswordRequestSerializer,
         responses={200: 'success'},
+        tags=['User']
     )
     def change_password(self, request):
         serializer = ChangePasswordRequestSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
         user = User.objects.filter(id=request.user.id).first()
 
