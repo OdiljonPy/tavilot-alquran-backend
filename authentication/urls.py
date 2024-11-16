@@ -10,5 +10,5 @@ urlpatterns = [
     path('password/rest/', PasswordViewSet.as_view({'post': 'reset_password'}), name='reset_password'),
     path('password/send/token/', PasswordViewSet.as_view({'post': 'send_token_password'}), name='send_token_password'),
     path('password/verify/token/', PasswordViewSet.as_view({'post': 'verify_with_token'}), name='verify_with_token'),
-    path('password/change/', PasswordViewSet.as_view({'post': 'change_password'}), name='change_password'),
+    path('password/change/', PasswordViewSet.as_view({'patch': 'change_password'}), name='change_password'),
 ]
