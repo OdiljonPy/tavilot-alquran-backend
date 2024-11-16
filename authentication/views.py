@@ -50,7 +50,7 @@ class UserViewSet(ViewSet):
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED)
         validated_user = serializer.save()
 
-        check_otp(OTP.objects.filter(user_id=validated_user.id))
+        check_otp(OTP.objects.filter(user_id=validated_user.id).order_by('created_at'))
         obj = OTP.objects.create(user_id=validated_user.id)
 
         obj.save()
