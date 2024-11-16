@@ -30,10 +30,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # apps
-    'tavilot',
-    'authentication',
-
     # packages
     'rest_framework',
     'rest_framework_simplejwt',
@@ -41,6 +37,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'modeltranslation',
     'tinymce',
+
+    # local apps
+    'tavilot',
+    'authentication',
 
 ]
 
@@ -53,10 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
     'authentication.middlewares.AuthenticationBaseRedirectMiddleware',
-    'tavilot.middlewares.VerseMiddleware',
-
 ]
 
 ROOT_URLCONF = 'config.urls'

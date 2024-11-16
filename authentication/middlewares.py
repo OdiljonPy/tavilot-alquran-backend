@@ -11,7 +11,7 @@ class AuthenticationBaseRedirectMiddleware(MiddlewareMixin):
         exclude_target_urls = [reverse('auth_me'), reverse('change_password')]
         if primary_key:
             exclude_target_urls.append(reverse('chapter_detail', kwargs={'pk': primary_key}))
-            exclude_target_urls.append(reverse('full_juz_detail', kwargs={'pk': primary_key}))
+            exclude_target_urls.append(reverse('juz_detail', kwargs={'pk': primary_key}))
 
         if request.path.startswith('/api/v1/') and request.path in exclude_target_urls:
             payload = validate_token(request.headers.get('Authorization'))
