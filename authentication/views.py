@@ -160,6 +160,7 @@ class PasswordViewSet(ViewSet):
         operation_description='Reset password with token api',
         request_body=OTPTokenWithPasswordSerializer,
         responses={200: UserSerializer()},
+        tags=['User']
     )
     def verify_with_token(self, request):
 
@@ -190,7 +191,7 @@ class PasswordViewSet(ViewSet):
     def change_password(self, request):
         serializer = ChangePasswordRequestSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
-            raise CustomApiException(error_code=ErrorCodes.INVALID_INPUT, message=serializer.errors)
+            raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
 
         user = User.objects.filter(id=request.user.id).first()
 

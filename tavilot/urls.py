@@ -1,7 +1,11 @@
 from django.urls import path
-from .views import ChapterViewSet, PostViewSet, CategoryViewSet, AboutUsViewSet, VerseViewSet
+from .views import ChapterViewSet, PostViewSet, CategoryViewSet, AboutUsViewSet, VerseViewSet, JuzViewSet
 
 urlpatterns = [
+    path('juz/', JuzViewSet.as_view({'get': 'get_juz'}), name='juz'),
+    path('juz/arab/<int:pk>/', JuzViewSet.as_view({'get': 'get_juz_detail_arab'}), name='arabic_juz_detail'),
+    path('juz/translate/<int:pk>/', JuzViewSet.as_view({'get': 'get_juz_detail_arab_uz'}), name='arabic_uz_juz_detail'),
+    path('juz/full/<int:pk>/', JuzViewSet.as_view({'get': 'get_juz_detail_arab_uz'}), name='full_juz_detail'),
     path('chapters/', ChapterViewSet.as_view({'get': 'chapter_list'}), name='chapters'),
     path('chapter/<int:pk>/', ChapterViewSet.as_view({'get': 'chapter_detail_translated_verses'}),
          name='chapter_detail_translated_verses'),

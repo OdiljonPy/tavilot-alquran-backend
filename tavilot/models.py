@@ -3,11 +3,27 @@ from django.db import models
 from abstarct_model.base_model import BaseModel
 from tinymce.models import HTMLField
 from authentication.models import User
+from django.core.exceptions import ValidationError
+
+
+class Juz(BaseModel):
+    number = models.PositiveIntegerField(unique=True)
+    title = models.CharField(max_length=500)
+
+    def __str__(self):
+        return str(self.number)
+
+    class Meta:
+        verbose_name = 'Джуз'
+        verbose_name_plural = 'Джузы'
+        ordering = ['number']
 
 
 class Chapter(BaseModel):
+    juz = models.ManyToManyField(Juz, verbose_name='джуз', related_name='juz_chapter')
     name = models.CharField(max_length=150, verbose_name="название")
     description = models.TextField(verbose_name="описание")
+    number = models.PositiveIntegerField(unique=True)
 
     def __str__(self):
         return self.name
@@ -15,10 +31,11 @@ class Chapter(BaseModel):
     class Meta:
         verbose_name = 'Сура'
         verbose_name_plural = 'Суры'
-        ordering = ('-created_at',)
+        ordering = ('number',)
 
 
 class Verse(BaseModel):
+    juz = models.ForeignKey(Juz, on_delete=models.CASCADE, verbose_name='джуз', related_name='juz_verse')
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура', related_name='chapter_verse')
     number = models.PositiveIntegerField(verbose_name="порядковый номер аят", db_index=True)
     text = models.TextField(verbose_name="аят", db_index=True)
@@ -28,10 +45,17 @@ class Verse(BaseModel):
     def __str__(self):
         return str(self.id)
 
+    def clean(self):
+        super().clean()
+        if Verse.objects.select_related('chapter').filter(number=self.number, chapter=self.chapter).exclude(id=self.id).exists():
+            raise ValidationError("Verse with this surah and number already exists.")
+        if not self.chapter.juz.filter(id=self.juz.id).exists():
+            raise ValidationError("The juz of the verse does not match the juz of the surah.")
+
     class Meta:
         verbose_name = 'Аят'
         verbose_name_plural = 'Аяты'
-        ordering = ('-created_at',)
+        ordering = ('number',)
         indexes = [
             models.Index(fields=['number'], name='number_index'),
             models.Index(fields=['text'], name='text_index'),

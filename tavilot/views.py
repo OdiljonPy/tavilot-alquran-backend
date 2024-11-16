@@ -1,16 +1,73 @@
 from django.db.models import Q
+
+from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
+
 from exception.exceptions import CustomApiException
 from exception.error_message import ErrorCodes
-from rest_framework import status
+
 from drf_yasg import openapi
-from .models import (Chapter, Category, Post, AboutUs, Verse)
-from .serializers import (
-    ChapterFullSerializer, PostSerializer, ChapterListSerializer,
-    CategorySerializer, AboutUsSerializer, ChapterUzArabSerializer,
-    VerseSearchSerializer, VerseArabSerializer)
 from drf_yasg.utils import swagger_auto_schema
+from .models import (Chapter, Category, Post, AboutUs, Verse, Juz)
+from .serializers import (ChapterFullSerializer, PostSerializer,
+                          ChapterListSerializer, CategorySerializer,
+                          AboutUsSerializer, ChapterUzArabSerializer,
+                          VerseSearchSerializer, VerseArabSerializer,
+                          JuzSerializer, JuzArabSerializer,
+                          JuzUzArabSerializer, JuzFullSerializer)
+
+
+class JuzViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='List of Juz',
+        operation_description='List of Juz',
+        responses={200: JuzSerializer(many=True)},
+        tags=['Juz']
+    )
+    def get_juz(self, request):
+        juz = Juz.objects.all()
+        serializer = JuzSerializer(juz, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Juz detail arabic',
+        operation_description='Juz detail arabic',
+        responses={200: JuzArabSerializer()},
+        tags=['Juz']
+    )
+    def get_juz_detail_arab(self, request, pk):
+        juz = Juz.objects.prefetch_related('juz_chapter', 'juz_verse').filter(id=pk).first()
+        if juz is None:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        serializer = JuzArabSerializer(juz, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Juz detail uz arabic',
+        operation_description='Juz detail uz arabic',
+        responses={200: JuzUzArabSerializer()},
+        tags=['Juz']
+    )
+    def get_juz_detail_arab_uz(self, request, pk):
+        juz = Juz.objects.prefetch_related('juz_chapter', 'juz_verse').filter(id=pk).first()
+        if juz is None:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        serializer = JuzUzArabSerializer(juz, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Juz detail full',
+        operation_description='Juz detail full',
+        responses={200: JuzFullSerializer()},
+        tags=['Juz']
+    )
+    def get_juz_detail_full(self, request, pk):
+        juz = Juz.objects.prefetch_related('juz_chapter', 'juz_verse').filter(id=pk).first()
+        if juz is None:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        serializer = JuzFullSerializer(juz, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class ChapterViewSet(ViewSet):
@@ -22,9 +79,8 @@ class ChapterViewSet(ViewSet):
     )
     def chapter_list(self, request):
         chapter = Chapter.objects.all()
-        return Response(
-            data={'result': ChapterListSerializer(chapter, many=True, context={'request': request}).data, 'ok': True},
-            status=status.HTTP_200_OK)
+        serializer = ChapterListSerializer(chapter, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary='Chapter detail with verses',
@@ -36,8 +92,8 @@ class ChapterViewSet(ViewSet):
         chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        return Response(data={'result': ChapterFullSerializer(chapter, context={'request': request}).data, 'ok': True},
-                        status=status.HTTP_200_OK)
+        serializer = ChapterFullSerializer(chapter, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary='Chapter detail with arabic and translated verses',
@@ -46,18 +102,18 @@ class ChapterViewSet(ViewSet):
         tags=['Chapter'],
     )
     def chapter_detail_translated_verses(self, request, pk):
+        print('yo ho ho nima gap tarjima' * 5)
         chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        return Response(
-            data={'result': ChapterUzArabSerializer(chapter, context={'request': request}).data, 'ok': True},
-            status=status.HTTP_200_OK)
+        serializer = ChapterUzArabSerializer(chapter, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class VerseViewSet(ViewSet):
     @swagger_auto_schema(
-        operation_summary='Verses arabic',
-        operation_description='Arabic version of verses',
+        operation_summary='Arabic verses by chapter ID',
+        operation_description='Arabic version of verses by chapter ID',
         responses={200: VerseArabSerializer()},
         tags=['Verse'],
     )
@@ -65,7 +121,6 @@ class VerseViewSet(ViewSet):
         verses = Verse.objects.select_related('chapter').filter(chapter_id=pk)
         serializer = VerseArabSerializer(verses, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -82,8 +137,8 @@ class VerseViewSet(ViewSet):
         if q:
             filter_ &= (Q(text__icontains=q) | Q(text_arabic__icontains=q) | Q(number__icontains=q))
         verses = Verse.objects.select_related('chapter').filter(filter_)
-        return Response(data={'result': VerseSearchSerializer(verses, many=True).data, 'ok': True},
-                        status=status.HTTP_200_OK)
+        serializer = VerseSearchSerializer(verses, many=True)
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(ViewSet):
@@ -95,8 +150,8 @@ class CategoryViewSet(ViewSet):
     )
     def category_list(self, request):
         category_list = Category.objects.all()
-        return Response(data={'result': CategorySerializer(category_list, many=True, context={'request': request}).data,
-                              'ok': True}, status=status.HTTP_200_OK)
+        serializer = CategorySerializer(category_list, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class PostViewSet(ViewSet):
@@ -108,8 +163,8 @@ class PostViewSet(ViewSet):
     )
     def posts_list(self, request, pk):
         data = Post.objects.filter(category_id=pk, is_published=True)
-        return Response(data={'result': PostSerializer(data, many=True, context={'request': request}).data, 'ok': True},
-                        status=status.HTTP_200_OK)
+        serializer = PostSerializer(data, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary='Detail of post',
@@ -121,8 +176,8 @@ class PostViewSet(ViewSet):
         data = Post.objects.filter(id=pk, is_published=True).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        return Response(data={'result': PostSerializer(data, context={'request': request}).data, 'ok': True},
-                        status=status.HTTP_200_OK)
+        serializer = PostSerializer(data, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
 class AboutUsViewSet(ViewSet):
@@ -136,5 +191,5 @@ class AboutUsViewSet(ViewSet):
         about_us = AboutUs.objects.order_by('-created_at').first()
         if about_us is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        return Response(data={'result': AboutUsSerializer(about_us, context={'request': request}).data, 'ok': True},
-                        status=status.HTTP_200_OK)
+        serializer = AboutUsSerializer(about_us, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
