@@ -2,12 +2,6 @@ from django.contrib import admin
 from .models import Chapter, Verse, Post, Category, AboutUs, SubCategory, Juz
 
 
-
-class VerseTabularInline(admin.TabularInline):
-    model = Verse
-    extra = 1
-
-
 class SubCategoryTabularInline(admin.TabularInline):
     model = SubCategory
     extra = 1
@@ -18,7 +12,6 @@ class ChapterAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
-    inlines = [VerseTabularInline]
 
 
 @admin.register(Verse)
