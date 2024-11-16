@@ -18,8 +18,8 @@ from .utils import check_otp, user_existing, check_otp_attempts
 
 class UserViewSet(ViewSet):
     @swagger_auto_schema(
-        operation_summary='User authme',
-        operation_description="User authme",
+        operation_summary='User auth me api',
+        operation_description="User authme api",
         responses={200: UserSerializer()},
         tags=['User']
     )
@@ -32,10 +32,10 @@ class UserViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        operation_summary='Registration a user',
-        operation_description='Registration a user',
+        operation_summary='Registration a user api',
+        operation_description='Registration a user api',
         request_body=UserSerializer,
-        responses={200: UserSerializer()},
+        responses={201: UserSerializer()},
         tags=['User']
     )
     def register(self, request):
@@ -50,7 +50,7 @@ class UserViewSet(ViewSet):
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED)
         validated_user = serializer.save()
 
-        check_otp(OTP.objects.filter(user_id=validated_user.id))
+        check_otp(OTP.objects.filter(user_id=validated_user.id).order_by('created_at'))
         obj = OTP.objects.create(user_id=validated_user.id)
 
         obj.save()
@@ -59,8 +59,8 @@ class UserViewSet(ViewSet):
                         status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
-        operation_summary='Verify a user',
-        operation_description='Verify a user',
+        operation_summary='Verify a user api',
+        operation_description='Verify a user api',
         request_body=OTPSerializer,
         responses={200: OTPSerializer()},
         tags=['User']
@@ -81,8 +81,8 @@ class UserViewSet(ViewSet):
         return Response({'result': 'Successfully verified.', 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        operation_summary='Login user',
-        operation_description='Login user',
+        operation_summary='Login user api',
+        operation_description='Login user api',
         request_body=UserLoginRequestSerializer,
         responses={200: TokenSerializer()},
         tags=['User']
@@ -107,8 +107,8 @@ class UserViewSet(ViewSet):
 
 class PasswordViewSet(ViewSet):
     @swagger_auto_schema(
-        operation_summary='Send opt code',
-        operation_description='Send opt code',
+        operation_summary='Send opt code api',
+        operation_description='Send opt code api',
         request_body=PhoneNumberSerializer,
         responses={200: OTPSerializer()},
         tags=['User']
@@ -134,8 +134,8 @@ class PasswordViewSet(ViewSet):
         return Response({'result': {'otp_key': otp.otp_key}, 'ok': True}, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
-        operation_summary='Send token for verifying password',
-        operation_description='Send token for verifying password',
+        operation_summary='Send token for verifying password api',
+        operation_description='Send token for verifying password api',
         request_body=OTPSerializer,
         responses={200: OTPTokenSerializer()},
         tags=['User']
@@ -156,8 +156,8 @@ class PasswordViewSet(ViewSet):
         return Response(data={'result': {'token': token.token}, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        operation_summary='Reset password with token',
-        operation_description='Reset password with token',
+        operation_summary='Reset password with token api',
+        operation_description='Reset password with token api',
         request_body=OTPTokenWithPasswordSerializer,
         responses={200: UserSerializer()},
         tags=['User']
@@ -182,8 +182,8 @@ class PasswordViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        operation_summary='Change password',
-        operation_description='Change password',
+        operation_summary='Change password api',
+        operation_description='Change password api',
         request_body=ChangePasswordRequestSerializer,
         responses={200: 'success'},
         tags=['User']

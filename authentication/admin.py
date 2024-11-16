@@ -4,9 +4,9 @@ from .models import User, OTP, ResetToken
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ('id', 'phone_number', 'email', 'first_name', 'is_verified')
+    list_display = ('id', 'phone_number', 'first_name', 'is_verified')
     list_display_links = ('id', 'phone_number')
-    search_fields = ('phone_number', 'first_name', 'email')
+    search_fields = ('phone_number', 'first_name')
     list_filter = ('rate', 'is_verified')
 
     def save_model(self, request, obj, form, change):
