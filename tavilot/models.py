@@ -22,7 +22,9 @@ class Juz(BaseModel):
 class Chapter(BaseModel):
     juz = models.ManyToManyField(Juz, verbose_name='джуз', related_name='juz_chapter')
     name = models.CharField(max_length=150, verbose_name="название")
+    name_arabic = models.CharField(max_length=150, verbose_name='название на арабском языке')
     description = models.TextField(verbose_name="описание")
+    verse_number = models.PositiveIntegerField(verbose_name='количество аятов')
     number = models.PositiveIntegerField(unique=True)
 
     def __str__(self):
