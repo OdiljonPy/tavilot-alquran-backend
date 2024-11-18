@@ -14,7 +14,7 @@ class ChapterListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'name', 'name_arabic', 'verse_number', 'description']
+        fields = ['id', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description']
 
 
 class VerseSerializer(serializers.ModelSerializer):
@@ -46,7 +46,7 @@ class ChapterFullSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'name', 'name_arabic', 'verse_number', 'description', 'verses']
+        fields = ['id', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description', 'verses']
 
 
 class VerseUzArabSerializer(serializers.ModelSerializer):
@@ -82,7 +82,7 @@ class ChapterUzArabSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'name', 'name_arabic', 'verse_number', 'description', 'verses']
+        fields = ['id', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description', 'verses']
 
 
 class VerseSearchSerializer(serializers.ModelSerializer):
@@ -201,7 +201,7 @@ class ChapterUzArabJuzSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'juz', 'name', 'name_arabic', 'verse_number', 'description', 'number', 'verses']
+        fields = ['id', 'juz', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description', 'number', 'verses']
 
     def get_verses(self, obj):
         juz = self.context.get('juz')
@@ -262,7 +262,7 @@ class ChapterFullJuzSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'juz', 'name', 'name_arabic', 'verse_number', 'description', 'number', 'verses']
+        fields = ['id', 'juz', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description', 'number', 'verses']
 
     def get_verses(self, obj):
         juz = self.context.get('juz')
