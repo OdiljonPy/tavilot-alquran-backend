@@ -5,6 +5,11 @@ from tinymce.models import HTMLField
 from authentication.models import User
 from django.core.exceptions import ValidationError
 
+CHAPTER_TYPE_CHOICES = (
+    (1, 'Makkiy'),
+    (2, 'Madaniy')
+)
+
 
 class Juz(BaseModel):
     number = models.PositiveIntegerField(unique=True)
@@ -26,6 +31,9 @@ class Chapter(BaseModel):
     description = models.TextField(verbose_name="описание")
     verse_number = models.PositiveIntegerField(verbose_name='количество аятов', blank=True, null=True)
     number = models.PositiveIntegerField(unique=True)
+    type_choice = models.IntegerField(choices=CHAPTER_TYPE_CHOICES, verbose_name='место ниспослания суры',
+                                      blank=True, null=True)
+
 
     def __str__(self):
         return self.name
@@ -49,7 +57,8 @@ class Verse(BaseModel):
 
     def clean(self):
         super().clean()
-        if Verse.objects.select_related('chapter').filter(number=self.number, chapter=self.chapter).exclude(id=self.id).exists():
+        if Verse.objects.select_related('chapter').filter(number=self.number,
+                                                          chapter=self.chapter).exclude(id=self.id).exists():
             raise ValidationError("Verse with this surah and number already exists.")
         if not self.chapter.juz.filter(id=self.juz.id).exists():
             raise ValidationError("The juz of the verse does not match the juz of the surah.")
