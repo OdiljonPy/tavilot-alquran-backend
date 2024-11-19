@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 
 from django.contrib.auth.hashers import check_password
 from drf_yasg.utils import swagger_auto_schema
@@ -88,7 +88,7 @@ class UserViewSet(ViewSet):
         tags=['User']
     )
     def login(self, request):
-        login_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        login_time = timezone.now().isoformat()
         serializer = UserLoginRequestSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             raise CustomApiException(error_code=ErrorCodes.VALIDATION_FAILED, message=serializer.errors)
