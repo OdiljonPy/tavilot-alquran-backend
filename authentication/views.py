@@ -101,7 +101,7 @@ class UserViewSet(ViewSet):
         user.login_time = login_time
         user.save()
         return Response(
-            {'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token)}, 'ok': True},
+            {'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token), 'user_rate': user.rate}, 'ok': True},
             status=status.HTTP_200_OK)
 
 
