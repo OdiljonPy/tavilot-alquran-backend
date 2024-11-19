@@ -1,9 +1,6 @@
 from utils.get_untyped_token import decode_token
 from authentication.models import User
 
-def get_rate(token):
-    return decode_token(token.split()[1]).get('rate', '')
-
 def validate_token(token):
     if not token:
         return
