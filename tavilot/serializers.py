@@ -88,10 +88,11 @@ class ChapterUzArabSerializer(serializers.ModelSerializer):
 class VerseSearchSerializer(serializers.ModelSerializer):
     chapter_id = serializers.IntegerField(source='chapter.id', read_only=True)
     chapter_name = serializers.CharField(source='chapter.name', read_only=True)
+    chapter_name_arabic = serializers.CharField(source='chapter.name_arabic', read_only=True)
 
     class Meta:
         model = Verse
-        fields = ['id', 'number', 'chapter_id', 'chapter_name']
+        fields = ['id', 'number', 'chapter_id', 'chapter_name', 'chapter_name_arabic']
 
 
 class SubCategorySerializer(serializers.ModelSerializer):
