@@ -136,7 +136,7 @@ class Post(BaseModel):
     image = models.ImageField(upload_to='post/', verbose_name='изображение')
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
                             validators=[FileExtensionValidator(['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'zip'])])
-    file_type = models.CharField(max_length=10)
+    file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
     is_premium = models.BooleanField(default=False, verbose_name="премиум")
