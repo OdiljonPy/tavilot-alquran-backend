@@ -11,7 +11,7 @@ class VerseTranslationOptions(TranslationOptions):
 
 
 class CategoryTranslationOptions(TranslationOptions):
-    fields = ('name',)
+    fields = ('name', 'title')
 
 
 class PostTranslationOptions(TranslationOptions):

@@ -117,12 +117,13 @@ class CategorySerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
+        self.fields['title'] = serializers.CharField(source=f'title_{language}')
 
     subcategory = SubCategorySerializer(many=True, read_only=True, source='post_subcategory')
 
     class Meta:
         model = Category
-        fields = ['id', 'name', 'subcategory']
+        fields = ['id', 'name', 'title', 'subcategory']
 
 
 class PostSerializer(serializers.ModelSerializer):
