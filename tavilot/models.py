@@ -59,7 +59,7 @@ class Verse(BaseModel):
         super().clean()
         if Verse.objects.select_related('chapter').filter(number=self.number,
                                                           chapter=self.chapter).exclude(id=self.id).exists():
-            raise ValidationError("Стих с этой сурой и номером уже существует.")
+            raise ValidationError("Аят с этой сурой и номером уже существует.")
         if not self.chapter.juz.filter(id=self.juz.id).exists():
             raise ValidationError("Джуз аята не соответствует джузу суры.")
 
