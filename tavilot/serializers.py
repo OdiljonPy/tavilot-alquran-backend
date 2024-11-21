@@ -137,7 +137,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'category', 'sub_category', 'file', 'description', 'is_published', 'is_premium',
+        fields = ['id', 'title', 'category', 'sub_category', 'file',  'file_type', 'description', 'is_published', 'is_premium',
                   'image']
 
 
