@@ -36,6 +36,7 @@ class PostAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'category', 'is_published')
     search_fields = ('title', 'description')
     list_filter = ('category', 'is_published', 'is_premium')
+    exclude = ('file_type',)
 
 
 
