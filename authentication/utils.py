@@ -25,7 +25,7 @@ def generate_otp_code():
 
 
 def check_otp(otp):
-    first_otp = otp.order_by('created_at').first()
+    first_otp = otp.first()
 
     if first_otp and timezone.now() - first_otp.created_at > timedelta(hours=12):
         otp.delete()

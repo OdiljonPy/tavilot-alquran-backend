@@ -30,10 +30,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # apps
-    'tavilot',
-    'authentication',
-
     # packages
     'rest_framework',
     'rest_framework_simplejwt',
@@ -41,6 +37,10 @@ INSTALLED_APPS = [
     'corsheaders',
     'modeltranslation',
     'tinymce',
+
+    # local apps
+    'tavilot',
+    'authentication',
 
 ]
 
@@ -232,5 +232,3 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
 TELEGRAM_API_URL = "https://api.telegram.org/bot{}/sendMessage?text={}&chat_id={}"
 BOT_TOKEN = "6787403849:AAE2piymBY7F-9DCRKbEK3kZoBx1paVSTog"
 CHANNEL_ID = "-1002188042090"
-
-SUBSCRIPTION_PRICE = int(os.getenv("SUBSCRIPTION_PRICE"))
