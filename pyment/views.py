@@ -1,18 +1,16 @@
-from django.shortcuts import render
 from rest_framework import status
-from rest_framework.utils.representation import serializer_repr
-from rest_framework.viewsets import ViewSet
-from rest_framework.response import Response
 from django.utils import timezone
-from exception.exceptions import CustomApiException
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+
+from authentication.models import User
 from exception.error_message import ErrorCodes
+from exception.exceptions import CustomApiException
+from .models import Subscription, CreateTransaction
 from .serializers import CreateTransactionSerializer, CreateTransactionResponseSerializer, PerformTransactionSerializer, \
     PerformTransactionResponseSerializer
-from authentication.models import User
-from drf_yasg import openapi
-from django.db.models import Prefetch
-from drf_yasg.utils import swagger_auto_schema
-from .models import Subscription, CreateTransaction
 
 
 class Transaction(ViewSet):
