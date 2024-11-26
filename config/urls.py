@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.db import transaction
 from django.urls import path, re_path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -26,6 +27,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('transaction/', include('pyment.urls')),
     path('api/v1/', include('tavilot.urls')),
     path('api/v1/auth/', include('authentication.urls')),
     path('tinymce/', include('tinymce.urls')),
