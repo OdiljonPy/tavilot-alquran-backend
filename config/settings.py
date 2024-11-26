@@ -232,3 +232,6 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880
 TELEGRAM_API_URL = "https://api.telegram.org/bot{}/sendMessage?text={}&chat_id={}"
 BOT_TOKEN = "6787403849:AAE2piymBY7F-9DCRKbEK3kZoBx1paVSTog"
 CHANNEL_ID = "-1002188042090"
+
+
+SUBSCRIPTION_PRICE=int(os.environ.get('SUBSCRIPTION_PRICE', 0))
