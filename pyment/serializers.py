@@ -32,6 +32,13 @@ class ParamsSerializer(serializers.Serializer):
             )
         return super().to_internal_value(data)
 
+
+class CheckPerformTransactionSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    amount = serializers.IntegerField(min_value=2000)
+    account = AccountSerializer()
+
+
 class CreateTransactionSerializer(serializers.Serializer):
     method = serializers.CharField()
     params = ParamsSerializer()
@@ -40,11 +47,6 @@ class CreateTransactionSerializer(serializers.Serializer):
     def validate_method(self, value):
         if value != "CreateTransaction":
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message="Method must be 'CreateTransaction'")
-        return value
-
-    def validate_amount(self, value):
-        if value != settings.SUBSCRIPTION_PRICE:
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message="Subscription price sent incorrectly")
         return value
 
 
