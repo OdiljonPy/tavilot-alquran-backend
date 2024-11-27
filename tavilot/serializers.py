@@ -14,7 +14,7 @@ class ChapterListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description']
+        fields = ['id', 'name', 'number', 'name_arabic', 'verse_number', 'type_choice', 'description']
 
 
 class VerseSerializer(serializers.ModelSerializer):
@@ -46,7 +46,7 @@ class ChapterFullSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description', 'verses']
+        fields = ['id', 'name', 'number', 'name_arabic', 'verse_number', 'type_choice', 'description', 'verses']
 
 
 class VerseUzArabSerializer(serializers.ModelSerializer):
@@ -82,7 +82,7 @@ class ChapterUzArabSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chapter
-        fields = ['id', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description', 'verses']
+        fields = ['id', 'name', 'number', 'name_arabic', 'verse_number', 'type_choice', 'description', 'verses']
 
 
 class VerseSearchSerializer(serializers.ModelSerializer):
