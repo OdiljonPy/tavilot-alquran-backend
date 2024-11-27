@@ -9,15 +9,32 @@ from rest_framework import serializers
 
 class AccountSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
-    subscribe_id = serializers.IntegerField()
 
 
-class CreateTransactionSerializer(serializers.Serializer):
-    method = serializers.CharField()
-    params = serializers.DictField()
+class ParamsSerializer(serializers.Serializer):
     id = serializers.CharField()
     time = serializers.DateTimeField()
     amount = serializers.IntegerField(min_value=2000)
+
+    def to_internal_value(self, data):
+        """
+        JSON ichidagi `time` millisekund qiymatini `datetime` formatiga aylantirish
+        """
+        time_in_millis = data.get('time')
+        if isinstance(time_in_millis, str) and time_in_millis.isdigit():
+            time_in_millis = int(time_in_millis)  # Millisekund qiymatini butun songa aylantirish
+        if isinstance(time_in_millis, int):
+            # Millisekundni `datetime` formatiga aylantirish
+            data['time'] = datetime.fromtimestamp(time_in_millis / 1000, tz=timezone.utc)
+        elif isinstance(time_in_millis, str):
+            raise serializers.ValidationError(
+                {"time": "Invalid time format. Expected millisecond timestamp as an integer."}
+            )
+        return super().to_internal_value(data)
+
+class CreateTransactionSerializer(serializers.Serializer):
+    method = serializers.CharField()
+    params = ParamsSerializer()
     account = AccountSerializer()
 
     def validate_method(self, value):
@@ -29,13 +46,6 @@ class CreateTransactionSerializer(serializers.Serializer):
         if value != settings.SUBSCRIPTION_PRICE:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message="Subscription price sent incorrectly")
         return value
-
-    def to_internal_value(self, data):
-        # `time`ni datetime formatiga o‘girish
-        time_in_millis = data.get('time')
-        if time_in_millis and isinstance(time_in_millis, int) and time_in_millis > 0:
-            data['time'] = datetime.fromtimestamp(time_in_millis / 1000, tz=timezone.utc)
-        return super().to_internal_value(data)
 
 
 class CreateTransactionResponseSerializer(serializers.Serializer):
@@ -62,7 +72,7 @@ class PerformTransactionSerializer(serializers.Serializer):
 
     def validate_method(self, value):
         if value != "PerformTransaction":
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message="Method must be 'CreateTransaction'")
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message="Method must be 'PerformTransaction'")
         return value
 
 

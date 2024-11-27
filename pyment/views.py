@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework import status
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
@@ -46,27 +47,27 @@ class Transaction(ViewSet):
         subscription = Subscription.objects.create(
             user_id=user_id,
             status=1,  # Yangi obuna holati
-            amount=serializer.validated_data['amount'],
+            amount=serializer.validated_data['params']['amount'],
             pyment_date=timezone.now()
         )
 
         # Transaction yaratish
         transaction_data = CreateTransaction.objects.create(
             user_id=user_id,
-            amount=serializer.validated_data['amount'],
-            payme_id=serializer.validated_data['id'],
+            amount=serializer.validated_data['params']['amount'],
+            payme_id=serializer.validated_data['params']['id'],
             transaction=subscription,  # To'g'ri bog'lanish
             state=1,
-            time=serializer.validated_data['time']
+            time=serializer.validated_data['params']['time']
         )
 
         # Response qaytarish
         response_data = {
-            "result": CreateTransactionResponseSerializer(
-                transaction=subscription.id,
-                create_time=transaction_data.created_at,
-                state=transaction_data.state
-            ).data,
+            "result": CreateTransactionResponseSerializer({
+                "transaction": subscription.id,
+                "create_time": transaction_data.created_at,
+                "state": transaction_data.state
+            }).data,
             "ok": True
         }
 
@@ -104,18 +105,18 @@ class Transaction(ViewSet):
         # Transactionning bog'liq obyektini yangilash
         transaction_data.transaction.status = 2
         transaction_data.transaction.pyment_date = timezone.now()
-        transaction_data.transaction.save(update_fields=['state', 'pyment_date'])
+        transaction_data.transaction.save(update_fields=['status', 'pyment_date'])
         transaction_data.user.rate = 2
         transaction_data.user.login_time = timezone.now()
         transaction_data.user.save(update_fields=['rate', 'login_time'])
 
         # Response qaytarish
         response_data = {
-            "result": PerformTransactionResponseSerializer(
-                transaction=transaction_data.id,
-                perform_time=transaction_data.created_at,
-                state=2
-            ).data,
+            "result": PerformTransactionResponseSerializer({
+                "transaction":transaction_data.id,
+                "perform_time":transaction_data.created_at,
+                "state":2
+            }).data,
             "ok": True
         }
         return Response(response_data, status=status.HTTP_200_OK)
