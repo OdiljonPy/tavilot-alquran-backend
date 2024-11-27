@@ -1,3 +1,5 @@
+from crypt import methods
+
 from django.db.models import Prefetch
 from rest_framework import status
 from django.utils import timezone
@@ -15,6 +17,15 @@ from .serializers import CreateTransactionSerializer, CreateTransactionResponseS
 
 
 class Transaction(ViewSet):
+    def transaction(self, request):
+        data = request.data
+        method = data.get('method', '')
+        if method =="CreateTransaction":
+            return self.create_transaction(request)
+        elif method =="PerformTransaction":
+            return self.perform_transaction(request)
+        raise CustomApiException(ErrorCodes.NOT_FOUND)
+
     @swagger_auto_schema(
         request_body=CreateTransactionSerializer,
         responses={200: CreateTransactionResponseSerializer()},
@@ -92,11 +103,12 @@ class Transaction(ViewSet):
         # Transactionni topish
         transaction_data = CreateTransaction.objects.filter(
             payme_id=transaction_id,
-            state=1
         ).first()
 
         if not transaction_data:
             raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message="Transaction does not exist.")
+        if transaction_data and transaction_data.state != 1:
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message="Transaction state is invalid.")
 
         # Transactionni yangilash
         transaction_data.state = 2
