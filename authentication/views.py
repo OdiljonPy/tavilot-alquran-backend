@@ -1,6 +1,5 @@
-from django.utils import timezone
-
 from django.contrib.auth.hashers import check_password
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
@@ -9,11 +8,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from exception.error_message import ErrorCodes
 from exception.exceptions import CustomApiException
+from pyment.models import Subscription
 from utils.send_message import send_telegram_otp_code
 from .models import User, OTP, ResetToken
 from .serializers import UserSerializer, PhoneNumberSerializer, OTPSerializer, OTPTokenSerializer, \
     UserLoginRequestSerializer, TokenSerializer, ChangePasswordRequestSerializer, OTPTokenWithPasswordSerializer
 from .utils import check_otp, user_existing, check_otp_attempts
+from django.conf import settings
 
 
 class UserViewSet(ViewSet):
@@ -30,6 +31,15 @@ class UserViewSet(ViewSet):
 
         serializer = UserSerializer(user, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+    @swagger_auto_schema(
+        operation_summary='Check user subscription',
+        responses={200: "{result: True/False, prays:0}"},
+        tags=['User']
+    )
+    def subscription_check(self, request):
+        subscriptions_qs = Subscription.objects.filter(status=2, user_id=request.user.id).first()
+        return Response({"result": subscriptions_qs.exists(), 'ok': True, 'prays': settings.SUBSCRIPTION_PRICE},
+                        status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary='Registration a user api',
@@ -101,7 +111,8 @@ class UserViewSet(ViewSet):
         user.login_time = login_time
         user.save()
         return Response(
-            {'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token), 'user_rate': user.rate}, 'ok': True},
+            {'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token), 'user_rate': user.rate},
+             'ok': True},
             status=status.HTTP_200_OK)
 
 
