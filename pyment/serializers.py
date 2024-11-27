@@ -15,6 +15,7 @@ class ParamsSerializer(serializers.Serializer):
     id = serializers.CharField()
     time = serializers.DateTimeField()
     amount = serializers.IntegerField(min_value=2000)
+    account = AccountSerializer()
 
     def to_internal_value(self, data):
         """
@@ -33,16 +34,19 @@ class ParamsSerializer(serializers.Serializer):
         return super().to_internal_value(data)
 
 
-class CheckPerformTransactionSerializer(serializers.Serializer):
-    id = serializers.CharField()
+class CheckPerformTransactionParamsSerializer(serializers.Serializer):
     amount = serializers.IntegerField(min_value=2000)
     account = AccountSerializer()
+
+
+class CheckPerformTransactionSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    params = CheckPerformTransactionParamsSerializer()
 
 
 class CreateTransactionSerializer(serializers.Serializer):
     method = serializers.CharField()
     params = ParamsSerializer()
-    account = AccountSerializer()
 
     def validate_method(self, value):
         if value != "CreateTransaction":

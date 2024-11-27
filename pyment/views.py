@@ -19,7 +19,7 @@ class Transaction(ViewSet):
         data = request.data
         method = data.get('method', '')
         if method == "CheckPerformTransaction":
-            return
+            return self.check_perform(request)
         elif method == "CreateTransaction":
             return self.create_transaction(request)
         elif method == "PerformTransaction":
@@ -40,7 +40,7 @@ class Transaction(ViewSet):
             return Response({"error": {"code": -31001, 'message': 'Subscription price sent incorrectly'}},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        user_id = serializer.validated_data['account']['user_id']
+        user_id = serializer.validated_data['params']['account']['user_id']
 
         # faqat aktiv bo‘lgan subscriptionlarni olish
         subscriptions_qs = Subscription.objects.filter(status=2)
@@ -75,7 +75,7 @@ class Transaction(ViewSet):
             return Response({"error": {"code": -31001, 'message': 'Subscription price sent incorrectly'}},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        user_id = serializer.validated_data['account']['user_id']
+        user_id = serializer.validated_data['params']['account']['user_id']
 
         # faqat aktiv bo‘lgan subscriptionlarni olish
         subscriptions_qs = Subscription.objects.filter(status=2)
