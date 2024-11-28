@@ -163,34 +163,44 @@ class Transaction(ViewSet):
         transaction = CreateTransaction.objects.filter(payme_id=transaction_id).select_related('user',
                                                                                                'transaction').first()
 
-        if not transaction or transaction.state != 1:
+        if not transaction:
             return Response({
                 "jsonrpc": "2.0",
                 "error": {"code": -31003, 'message': 'Invalid or non-existent transaction.'}
             }, status=status.HTTP_200_OK)
+        if transaction and transaction.state == 1:
+            transaction.state = 2
+            transaction.save()
 
-        transaction.state = 2
-        transaction.save()
+            subscription = transaction.transaction
+            subscription.status = 2
+            subscription.pyment_date = timezone.now()
+            subscription.save()
 
-        subscription = transaction.transaction
-        subscription.status = 2
-        subscription.pyment_date = timezone.now()
-        subscription.save()
+            user = transaction.user
+            user.rate = 2
+            user.login_time = timezone.now()
+            user.save()
 
-        user = transaction.user
-        user.rate = 2
-        user.login_time = timezone.now()
-        user.save()
-
-        response_data = {
-            "jsonrpc": "2.0",
-            "result": PerformTransactionResponseSerializer({
-                "transaction": transaction.id,
-                "perform_time": transaction.updated_at,
-                "state": 2
-            }).data,
-            "ok": True
-        }
+            response_data = {
+                "jsonrpc": "2.0",
+                "result": PerformTransactionResponseSerializer({
+                    "transaction": transaction.id,
+                    "perform_time": transaction.updated_at,
+                    "state": 2
+                }).data,
+                "ok": True
+            }
+        else:
+            response_data = {
+                "jsonrpc": "2.0",
+                "result": PerformTransactionResponseSerializer({
+                    "transaction": transaction.id,
+                    "perform_time": transaction.updated_at,
+                    "state": transaction.state,
+                }).data,
+                "ok": True
+            }
         return Response(response_data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
