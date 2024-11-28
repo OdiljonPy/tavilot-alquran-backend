@@ -76,10 +76,6 @@ class PerformTransactionSerializer(serializers.Serializer):
     method = serializers.CharField()
     params = PerformTransactionParamsSerializer()
 
-    def validate_method(self, value):
-        if value != "PerformTransaction":
-            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message="Method must be 'PerformTransaction'")
-        return value
 
 
 class PerformTransactionResponseSerializer(serializers.Serializer):
