@@ -32,7 +32,7 @@ class Transaction(ViewSet):
         }, status=status.HTTP_200_OK)
 
     def _get_user_with_active_subscriptions(self, user_id):
-        return User.objects.filter(pk=user_id, is_verified=True, rate=1).first()
+        return User.objects.filter(pk=user_id, is_verified=True).first()
 
     def _validate_subscription_price(self, amount):
         if amount != settings.SUBSCRIPTION_PRICE:
@@ -206,7 +206,7 @@ class Transaction(ViewSet):
             }, status=status.HTTP_200_OK)
 
         transaction_obj = CreateTransaction.objects.filter(payme_id=serializer.validated_data['params']['id']).first()
-        if not transaction_obj or transaction_obj.state == 1:
+        if not transaction_obj:
             return Response({
                 "jsonrpc": "2.0",
                 "error": {"code": -32400, 'message': "System error"}
