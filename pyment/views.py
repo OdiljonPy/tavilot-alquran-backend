@@ -195,7 +195,7 @@ class Transaction(ViewSet):
 
     @swagger_auto_schema(
         request_body=PerformTransactionSerializer,
-        responses={200: "result:{'allow':True}"},
+        responses={200: CheckTransactionSerializer()},
     )
     def check_transaction(self, request):
         serializer = PerformTransactionSerializer(data=request.data)
