@@ -109,16 +109,10 @@ class Transaction(ViewSet):
         transaction_obj = CreateTransaction.objects.filter(payme_id=serializer.validated_data['params']['id'],
                                                            state=1).first()
         if transaction_obj and datetime.now() - transaction_obj.time < timedelta(hours=12):
-            response_data = {
+            return Response({
                 "jsonrpc": "2.0",
-                "result": CreateTransactionResponseSerializer({
-                    "transaction": transaction_obj.transaction.id,
-                    "create_time": transaction_obj.created_at,
-                    "state": transaction_obj.state
-                }).data,
-                "ok": True
-            }
-            return Response(response_data, status=status.HTTP_200_OK)
+                "error": {"code": -31050, 'message': "Payment already created"}
+            }, status=status.HTTP_200_OK)
         subscription = Subscription.objects.create(
             user=user,
             status=1,
@@ -221,6 +215,12 @@ class Transaction(ViewSet):
                 "jsonrpc": "2.0",
                 "error": {"code": -32400, 'message': "System error"}
             }, status=status.HTTP_200_OK)
+        if transaction_obj and transaction_obj.state == 1:
+            return Response(
+                {"jsonrpc": "2.0", 'result': CheckTransactionSerializer({'create_time': transaction_obj.created_at,
+                                                                         "transaction": transaction_obj.transaction.id,
+                                                                         "state": transaction_obj.state}).data,
+                 'ok': True}, status=status.HTTP_200_OK)
         return Response({"jsonrpc": "2.0", 'result': CheckTransactionSerializer({'create_time':transaction_obj.created_at,
                                                                                  "perform_time":transaction_obj.updated_at,
                                                                                  "transaction":transaction_obj.transaction.id,
