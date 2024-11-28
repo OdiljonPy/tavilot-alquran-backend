@@ -5,7 +5,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-
+from datetime import datetime, timedelta
 from authentication.models import User
 from .models import Subscription, CreateTransaction
 from .serializers import (
@@ -22,6 +22,7 @@ class Transaction(ViewSet):
             "CheckPerformTransaction": self.check_perform,
             "CreateTransaction": self.create_transaction,
             "PerformTransaction": self.perform_transaction,
+            "CheckTransaction" :self.check_transaction,
         }
         if method in method_mapping:
             return method_mapping[method](request)
@@ -108,7 +109,18 @@ class Transaction(ViewSet):
                 "jsonrpc": "2.0",
                 "error": {"code": -31050, 'message': "You are already subscribed."}
             }, status=status.HTTP_200_OK)
-
+        transaction_obj=CreateTransaction.objects.filter(payme_id=serializer.validated_data['params']['id'], status=1).first()
+        if transaction_obj and datetime.now() - transaction_obj.time < timedelta(hours=12):
+            response_data = {
+                "jsonrpc": "2.0",
+                "result": CreateTransactionResponseSerializer({
+                    "transaction": transaction_obj.transaction.id,
+                    "create_time": transaction_obj.created_at,
+                    "state": transaction_obj.state
+                }).data,
+                "ok": True
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
         subscription = Subscription.objects.create(
             user=user,
             status=1,
@@ -182,3 +194,24 @@ class Transaction(ViewSet):
             "ok": True
         }
         return Response(response_data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=PerformTransactionSerializer,
+        responses={200:"result:{'allow':True}"},
+    )
+    def check_transaction(self, request):
+        serializer = PerformTransactionSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({
+                "jsonrpc": "2.0",
+                "error": {"code": -32700, 'message': serializer.errors}
+            }, status=status.HTTP_200_OK)
+
+        transaction_obj = CreateTransaction.objects.filter(payme_id=serializer.validated_data['params']['id']).first()
+        if not transaction_obj or transaction_obj.state == 1:
+            return Response({
+                "jsonrpc": "2.0",
+                "error": {"code": -32400, 'message': "System error"}
+            }, status=status.HTTP_200_OK)
+        return Response({"jsonrpc": "2.0", 'result': {"allow": True}, 'ok': True}, status=status.HTTP_200_OK)
+
