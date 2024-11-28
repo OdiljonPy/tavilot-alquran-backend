@@ -10,11 +10,10 @@ class ChapterListSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
     class Meta:
         model = Chapter
-        fields = ['id', 'name', 'number', 'name_arabic', 'verse_number', 'type_choice', 'description']
+        fields = ['id', 'name', 'number', 'name_arabic', 'verse_number', 'type_choice']
 
 
 class VerseSerializer(serializers.ModelSerializer):
@@ -76,13 +75,16 @@ class ChapterUzArabSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
     verses = VerseUzArabSerializer(many=True, read_only=True, source='chapter_verse')
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = Chapter
         fields = ['id', 'name', 'number', 'name_arabic', 'verse_number', 'type_choice', 'description', 'verses']
+
+    def get_description(self, obj):
+        return
 
 
 class VerseSearchSerializer(serializers.ModelSerializer):
@@ -199,11 +201,15 @@ class ChapterUzArabJuzSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
+    description = serializers.SerializerMethodField()
 
     class Meta:
         model = Chapter
         fields = ['id', 'juz', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description', 'number', 'verses']
+
+    def get_description(self, obj):
+        return
+
 
     def get_verses(self, obj):
         juz = self.context.get('juz')
