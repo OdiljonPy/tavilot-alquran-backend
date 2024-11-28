@@ -22,7 +22,7 @@ class Transaction(ViewSet):
             "CheckPerformTransaction": self.check_perform,
             "CreateTransaction": self.create_transaction,
             "PerformTransaction": self.perform_transaction,
-            "CheckTransaction" :self.check_transaction,
+            "CheckTransaction": self.check_transaction,
         }
         if method in method_mapping:
             return method_mapping[method](request)
@@ -32,10 +32,7 @@ class Transaction(ViewSet):
         }, status=status.HTTP_200_OK)
 
     def _get_user_with_active_subscriptions(self, user_id):
-        subscriptions_qs = Subscription.objects.filter(status=2)
-        return User.objects.filter(pk=user_id).prefetch_related(
-            Prefetch('subscription', queryset=subscriptions_qs, to_attr='active_subscriptions')
-        ).first()
+        return User.objects.filter(pk=user_id, is_verified=True, rate=1).first()
 
     def _validate_subscription_price(self, amount):
         if amount != settings.SUBSCRIPTION_PRICE:
@@ -70,7 +67,7 @@ class Transaction(ViewSet):
                 "error": {"code": -31050, 'message': "User not found"}
             }, status=status.HTTP_200_OK)
 
-        if user.active_subscriptions:
+        if user.rate == 2:
             return Response({
                 "jsonrpc": "2.0",
                 "error": {"code": -31050, 'message': "You are already subscribed."}
@@ -104,12 +101,13 @@ class Transaction(ViewSet):
                 "error": {"code": -31050, 'message': "User not found"}
             }, status=status.HTTP_200_OK)
 
-        if user.active_subscriptions:
+        if user.rate == 2:
             return Response({
                 "jsonrpc": "2.0",
                 "error": {"code": -31050, 'message': "You are already subscribed."}
             }, status=status.HTTP_200_OK)
-        transaction_obj=CreateTransaction.objects.filter(payme_id=serializer.validated_data['params']['id'], status=1).first()
+        transaction_obj = CreateTransaction.objects.filter(payme_id=serializer.validated_data['params']['id'],
+                                                           state=1).first()
         if transaction_obj and datetime.now() - transaction_obj.time < timedelta(hours=12):
             response_data = {
                 "jsonrpc": "2.0",
@@ -197,7 +195,7 @@ class Transaction(ViewSet):
 
     @swagger_auto_schema(
         request_body=PerformTransactionSerializer,
-        responses={200:"result:{'allow':True}"},
+        responses={200: "result:{'allow':True}"},
     )
     def check_transaction(self, request):
         serializer = PerformTransactionSerializer(data=request.data)
@@ -214,4 +212,3 @@ class Transaction(ViewSet):
                 "error": {"code": -32400, 'message': "System error"}
             }, status=status.HTTP_200_OK)
         return Response({"jsonrpc": "2.0", 'result': {"allow": True}, 'ok': True}, status=status.HTTP_200_OK)
-
