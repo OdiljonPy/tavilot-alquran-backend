@@ -13,8 +13,8 @@ from .models import (Chapter, Category, Post, AboutUs, Verse, Juz)
 from .serializers import (ChapterFullSerializer, PostSerializer,
                           ChapterListSerializer, CategorySerializer,
                           AboutUsSerializer, ChapterUzArabSerializer,
-                          VerseSearchSerializer,
-                          JuzSerializer,
+                          VerseSearchSerializer, ChapterIdNameSerializer,
+                          JuzSerializer, ChapterIdSerializer,
                           JuzUzArabSerializer, JuzFullSerializer)
 
 
@@ -74,6 +74,19 @@ class ChapterViewSet(ViewSet):
             serializer = ChapterFullSerializer(chapter, context={'request': request})
         else:
             serializer = ChapterUzArabSerializer(chapter, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Chapter id list',
+        operation_description='Chapter id list for bookmark',
+        request_body=ChapterIdSerializer,
+        responses={200: ChapterIdNameSerializer(many=True)},
+        tags=['Chapter'],
+    )
+    def chapter_bookmark(self, request):
+        ids = request.data.get('chapter_ids', [])
+        chapter_objects = Chapter.objects.filter(id__in=ids)
+        serializer = ChapterIdNameSerializer(chapter_objects, context={'request': request}, many=True)
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

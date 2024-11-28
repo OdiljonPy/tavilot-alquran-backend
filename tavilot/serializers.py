@@ -298,3 +298,20 @@ class JuzFullSerializer(serializers.ModelSerializer):
     def get_chapters(self, obj):
         chapters = obj.juz_chapter.all()
         return ChapterFullJuzSerializer(chapters, many=True, context={'juz': obj}).data
+
+
+class ChapterIdSerializer(serializers.Serializer):
+    chapter_ids = serializers.ListField(child=serializers.IntegerField(), read_only=True)
+
+class ChapterIdNameSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        language = 'uz'
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+        self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
+    class Meta:
+        model = Chapter
+        fields = ('id', 'name')
