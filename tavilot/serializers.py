@@ -301,7 +301,7 @@ class JuzFullSerializer(serializers.ModelSerializer):
 
 
 class ChapterIdSerializer(serializers.Serializer):
-    chapter_ids = serializers.ListField(child=serializers.IntegerField(), read_only=True)
+    chapter_ids = serializers.ListField(child=serializers.IntegerField())
 
 class ChapterIdNameSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
