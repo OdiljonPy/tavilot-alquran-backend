@@ -11,7 +11,7 @@ from .models import Subscription, CreateTransaction
 from .serializers import (
     CreateTransactionSerializer, CreateTransactionResponseSerializer,
     PerformTransactionSerializer, PerformTransactionResponseSerializer,
-    CheckPerformTransactionSerializer
+    CheckPerformTransactionSerializer, CheckTransactionSerializer
 )
 
 
@@ -170,17 +170,17 @@ class Transaction(ViewSet):
             }, status=status.HTTP_200_OK)
 
         transaction.state = 2
-        transaction.save(update_fields=['state'])
+        transaction.save()
 
         subscription = transaction.transaction
         subscription.status = 2
         subscription.pyment_date = timezone.now()
-        subscription.save(update_fields=['status', 'pyment_date'])
+        subscription.save()
 
         user = transaction.user
         user.rate = 2
         user.login_time = timezone.now()
-        user.save(update_fields=['rate', 'login_time'])
+        user.save()
 
         response_data = {
             "jsonrpc": "2.0",
@@ -211,4 +211,7 @@ class Transaction(ViewSet):
                 "jsonrpc": "2.0",
                 "error": {"code": -32400, 'message': "System error"}
             }, status=status.HTTP_200_OK)
-        return Response({"jsonrpc": "2.0", 'result': {"allow": True}, 'ok': True}, status=status.HTTP_200_OK)
+        return Response({"jsonrpc": "2.0", 'result': CheckTransactionSerializer({'create_time':transaction_obj.created_at,
+                                                                                 "perform_time":transaction_obj.updated_at,
+                                                                                 "transaction":transaction_obj.transaction.id,
+                                                                                 "state":transaction_obj.state}).data, 'ok': True}, status=status.HTTP_200_OK)

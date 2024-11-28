@@ -31,14 +31,15 @@ class UserViewSet(ViewSet):
 
         serializer = UserSerializer(user, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
     @swagger_auto_schema(
         operation_summary='Check user subscription',
         responses={200: "{result: True/False, prays:0}"},
         tags=['User']
     )
     def subscription_check(self, request):
-        subscriptions_qs = Subscription.objects.filter(status=2, user_id=request.user.id).first()
-        return Response({"result": subscriptions_qs.exists(), 'ok': True, 'prays': settings.SUBSCRIPTION_PRICE},
+        return Response({"result": User.objects.filter(id=request.user.id, rate=2).exists(), 'ok': True,
+                         'prays': settings.SUBSCRIPTION_PRICE},
                         status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

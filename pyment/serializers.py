@@ -90,3 +90,25 @@ class PerformTransactionResponseSerializer(serializers.Serializer):
             dt = datetime.fromisoformat(ret['perform_time'].replace('Z', '+00:00'))
             ret['perform_time'] = int(dt.timestamp() * 1000)
         return ret
+
+
+
+class CheckTransactionSerializer(serializers.Serializer):
+    create_time=serializers.DateTimeField()
+    perform_time = serializers.DateTimeField()
+    cancel_time = serializers.IntegerField(default=0)
+    transaction = serializers.CharField()
+    state = serializers.IntegerField()
+    reason = serializers.CharField(allow_null=True)
+
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # `create_time`ni millisekundga aylantirish
+        if 'perform_time' in ret and isinstance(ret['perform_time'], str):
+            dt = datetime.fromisoformat(ret['perform_time'].replace('Z', '+00:00'))
+            ret['perform_time'] = int(dt.timestamp() * 1000)
+        if 'create_time' in ret and isinstance(ret['create_time'], str):
+            dt = datetime.fromisoformat(ret['create_time'].replace('Z', '+00:00'))
+            ret['create_time'] = int(dt.timestamp() * 1000)
+        return ret
