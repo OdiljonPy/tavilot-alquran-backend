@@ -12,13 +12,14 @@ from authentication.models import User
 class AccountSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
 
-    def validate_user_id(self, data):
-        user_id = data.get('user_id')
+    def validate_user_id(self, value):
+        # `value` is the actual user_id, so no need to call `.get()`
+        user_id = value
         if not user_id:
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         if not User.objects.filter(id=user_id, is_verified=True).exists():
             raise PaymeCustomApiException(PaymeErrorCodes.USER_NOT_FOUND)
-        return data
+        return value
 
 
 class ParamsSerializer(serializers.Serializer):
@@ -54,7 +55,7 @@ class CheckPerformTransactionSerializer(serializers.Serializer):
     params = CheckPerformTransactionParamsSerializer()
 
     def validate(self, data):
-        if not data.get('account', {}).get('user_id'):
+        if not data['params'].get('account', {}).get('user_id'):
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         return data
 
