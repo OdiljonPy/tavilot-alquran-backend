@@ -54,13 +54,6 @@ class CheckPerformTransactionSerializer(serializers.Serializer):
     id = serializers.CharField()
     params = CheckPerformTransactionParamsSerializer()
 
-    def validate(self, data):
-        # Check if 'params' contains 'account' and if 'user_id' is present within 'account'
-        account = data.get('params', {}).get('account', {})
-        if not account.get('user_id'):
-            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
-        return data
-
 
 class CreateTransactionSerializer(serializers.Serializer):
     params = ParamsSerializer()

@@ -38,6 +38,9 @@ class TransactionViewSet(ViewSet):
         responses={200: "result:{'allow':True}"}
     )
     def check_perform(self, request):
+        account = request.data.get('params', {}).get('account', {})
+        if not account.get('user_id'):
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         serializer = CheckPerformTransactionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         amount = serializer.validated_data['params']['amount']
