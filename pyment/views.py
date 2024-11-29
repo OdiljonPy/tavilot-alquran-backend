@@ -167,7 +167,7 @@ class TransactionViewSet(ViewSet):
     def cancel_transaction(self, request):
         serializer = CancelTransactionSerializer(data=request.data)
         if not serializer.is_valid():
-            raise PaymeCustomApiException(PaymeErrorCodes.UNABLE_CANCEL)
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         transaction_obj = Transaction.objects.filter(id=serializer.validated_data['params']['id']).first()
         if not transaction_obj:
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
