@@ -42,7 +42,8 @@ class TransactionViewSet(ViewSet):
         if not account.get('user_id'):
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         serializer = CheckPerformTransactionSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            raise PaymeCustomApiException(PaymeErrorCodes.OPERATION_CANNOT_PERFORMED)
         amount = serializer.validated_data['params']['amount']
         user_id = serializer.validated_data['params']['account']['user_id']
         check_amount(amount)
@@ -55,6 +56,8 @@ class TransactionViewSet(ViewSet):
         account = request.data.get('params', {}).get('account', {})
         if not account.get('user_id'):
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
+        if not serializer.is_valid():
+            raise PaymeCustomApiException(PaymeErrorCodes.OPERATION_CANNOT_PERFORMED)
         amount = serializer.validated_data['params']['amount']
         user_id = serializer.validated_data['params']['account']['user_id']
         check_amount(amount)
