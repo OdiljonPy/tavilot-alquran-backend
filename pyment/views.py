@@ -153,7 +153,7 @@ class TransactionViewSet(ViewSet):
         ).first()
 
         if not transaction:
-            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_NOT_FOUND)
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
 
         response_data = CheckTransactionSerializer({
             "create_time": transaction.created_at,
