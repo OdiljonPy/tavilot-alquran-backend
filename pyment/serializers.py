@@ -148,15 +148,23 @@ class CancelTransactionSerializerResponse(serializers.Serializer):
 
 class GetStatementResponseSerializer(serializers.Serializer):
     id = serializers.CharField(source='payme_id')  # Use payme_id as id
-    time = serializers.IntegerField()  # Millisecond timestamp
+    time = serializers.DateTimeField()  # Millisecond timestamp
     amount = serializers.IntegerField()
-    account = AccountSerializer()  # Nested serializer for account
-    create_time = serializers.IntegerField()  # Millisecond timestamp
-    perform_time = serializers.IntegerField()  # Millisecond timestamp
-    cancel_time = serializers.IntegerField(default=0)  # Default is 0
+    account = serializers.SerializerMethodField()  # Nested serializer for account
+    create_time = serializers.DateTimeField(source='created_at')  # Millisecond timestamp
+    perform_time = serializers.DateTimeField()  # Millisecond timestamp
+    cancel_time = serializers.DateTimeField()  # Default is 0
     transaction = serializers.CharField()
     state = serializers.IntegerField(allow_null=True, required=False)
     reason = serializers.IntegerField(allow_null=True, required=False)
+
+
+    def get_account(self, obj):
+        """
+        Return the account information (e.g., user's phone number).
+        Assuming that `obj.user` is related and `user` has the `user_id` field.
+        """
+        return {"user_id": obj.user.id} if obj.user else {}
 
     def to_representation(self, instance):
         """
@@ -171,7 +179,7 @@ class GetStatementResponseSerializer(serializers.Serializer):
         representation['cancel_time'] = int(instance.cancel_time.timestamp() * 1000) if instance.cancel_time else 0
 
         # Handle account nested serializer (assuming it's part of the User model or related)
-        account_data = {"phone": instance.user.phone_number}  # Assuming phone is part of the User model
+        account_data = {"user_id": instance.user.id}  # Assuming phone is part of the User model
         representation['account'] = account_data
 
         return representation

@@ -209,12 +209,12 @@ class TransactionViewSet(ViewSet):
         from_ = request.data["params"].get('from')
         to_ = request.data["params"].get('to')
         date = convert_timestamps(from_, to_)
-        if not date.get('from_') or not date.get('to_'):
+        if not date.get('from_') or not date.get('to'):
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         # Filter transactions based on the given time range
-        transactions = Transaction.objects.filter(created_at__gte=date.get('from_'), created_at__lte=date.get('to'),
-                                                  reason__isnull=True)
 
+        transactions = Transaction.objects.filter(time__gte=date.get('from_'), time__lte=date.get('to'),
+                                                  reason__isnull=True)
         # If no transactions found, return empty list
         if not transactions:
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
