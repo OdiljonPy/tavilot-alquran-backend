@@ -63,7 +63,7 @@ class TransactionViewSet(ViewSet):
         check_amount(amount)
         if User.objects.filter(id=user_id, rate=2).exists():
             raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_EXISTS)
-        transaction_obj = Transaction.objects.filter(payme_id=serializer.validated_data['params']['id'],
+        transaction_obj = Transaction.objects.filter(user_id=user_id,
                                                      state=1).first()
         if transaction_obj and transaction_obj.payme_id == serializer.validated_data['params']['id'] and \
                 datetime.now() - transaction_obj.time < timedelta(hours=12):
@@ -132,7 +132,7 @@ class TransactionViewSet(ViewSet):
         return Response({
             "jsonrpc": "2.0",
             "result": PerformTransactionResponseSerializer({
-                "transaction": transaction.id,
+                "transaction": transaction.transaction.id,
                 "perform_time": transaction.perform_time,
                 "state": transaction.state
             }).data,
@@ -153,7 +153,7 @@ class TransactionViewSet(ViewSet):
         ).first()
 
         if not transaction:
-            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
+            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_NOT_FOUND)
 
         response_data = CheckTransactionSerializer({
             "create_time": transaction.created_at,
@@ -171,7 +171,7 @@ class TransactionViewSet(ViewSet):
         serializer = CancelTransactionSerializer(data=request.data)
         if not serializer.is_valid():
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
-        transaction_obj = Transaction.objects.filter(id=serializer.validated_data['params']['id']).first()
+        transaction_obj = Transaction.objects.filter(payme_id=serializer.validated_data['params']['id']).first()
         if not transaction_obj:
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         if transaction_obj.state == 1:
