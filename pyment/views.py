@@ -159,7 +159,9 @@ class TransactionViewSet(ViewSet):
             "create_time": transaction.created_at,
             "perform_time": transaction.perform_time if transaction.state != 1 else None,
             "transaction": transaction.transaction.id,
-            "state": transaction.state
+            "reason": transaction.reason,
+            "state": transaction.state,
+            'cancel_time': transaction.cancel_time or None,
         }).data
 
         return Response({"jsonrpc": "2.0", "result": response_data, "ok": True}, status=status.HTTP_200_OK)
@@ -174,6 +176,13 @@ class TransactionViewSet(ViewSet):
         transaction_obj = Transaction.objects.filter(payme_id=serializer.validated_data['params']['id']).first()
         if not transaction_obj:
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
+        if transaction_obj and not transaction_obj.state in (1, 2):
+            return Response({
+                "jsonrpc": "2.0",
+                "result": CancelTransactionSerializerResponse(
+                    {"transaction": transaction_obj.transaction.id, 'cancel_time': transaction_obj.cancel_time,
+                     'state': transaction_obj.state}).data}, status=status.HTTP_200_OK)
+
         if transaction_obj.state == 1:
             transaction_obj.state = -1
         else:
@@ -203,7 +212,8 @@ class TransactionViewSet(ViewSet):
         if not date.get('from_') or not date.get('to_'):
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         # Filter transactions based on the given time range
-        transactions = Transaction.objects.filter(created_at__gte=date.get('from_'), created_at__lte=date.get('to'), reason__isnull=True)
+        transactions = Transaction.objects.filter(created_at__gte=date.get('from_'), created_at__lte=date.get('to'),
+                                                  reason__isnull=True)
 
         # If no transactions found, return empty list
         if not transactions:

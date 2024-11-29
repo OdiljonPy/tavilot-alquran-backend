@@ -99,7 +99,7 @@ class PerformTransactionResponseSerializer(serializers.Serializer):
 class CheckTransactionSerializer(serializers.Serializer):
     create_time = serializers.DateTimeField()
     perform_time = serializers.DateTimeField(allow_null=True)
-    cancel_time = serializers.IntegerField(default=0)
+    cancel_time = serializers.DateTimeField(allow_null=True)
     transaction = serializers.CharField()
     state = serializers.IntegerField()
     reason = serializers.CharField(allow_null=True)
@@ -112,9 +112,14 @@ class CheckTransactionSerializer(serializers.Serializer):
             ret['perform_time'] = int(dt.timestamp() * 1000)
         if not ret.get("perform_time"):
             ret['perform_time'] = 0
+        if not ret.get("cancel_time"):
+            ret['cancel_time'] = 0
         if 'create_time' in ret and isinstance(ret['create_time'], str):
             dt = datetime.fromisoformat(ret['create_time'].replace('Z', '+00:00'))
             ret['create_time'] = int(dt.timestamp() * 1000)
+        if 'cancel_time' in ret and isinstance(ret['cancel_time'], str):
+            dt = datetime.fromisoformat(ret['cancel_time'].replace('Z', '+00:00'))
+            ret['cancel_time'] = int(dt.timestamp() * 1000)
         return ret
 
 
