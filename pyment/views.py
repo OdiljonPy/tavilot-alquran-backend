@@ -52,7 +52,9 @@ class TransactionViewSet(ViewSet):
 
     def create_transaction(self, request):
         serializer = CreateTransactionSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        account = request.data.get('params', {}).get('account', {})
+        if not account.get('user_id'):
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         amount = serializer.validated_data['params']['amount']
         user_id = serializer.validated_data['params']['account']['user_id']
         check_amount(amount)
