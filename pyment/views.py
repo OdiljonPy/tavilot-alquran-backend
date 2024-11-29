@@ -1,288 +1,24 @@
-# from django.conf import settings
-# from django.db.models import Prefetch
-# from django.utils import timezone
-# from drf_yasg.utils import swagger_auto_schema
-# from rest_framework import status
-# from rest_framework.response import Response
-# from rest_framework.viewsets import ViewSet
-# from datetime import datetime, timedelta
-# from authentication.models import User
-# from .models import Subscription, CreateTransaction
-# from .serializers import (
-#     CreateTransactionSerializer, CreateTransactionResponseSerializer,
-#     PerformTransactionSerializer, PerformTransactionResponseSerializer,
-#     CheckPerformTransactionSerializer, CheckTransactionSerializer
-# )
-#
-#
-# class Transaction(ViewSet):
-#     def transaction(self, request):
-#         method = request.data.get('method')
-#         method_mapping = {
-#             "CheckPerformTransaction": self.check_perform,
-#             "CreateTransaction": self.create_transaction,
-#             "PerformTransaction": self.perform_transaction,
-#             "CheckTransaction": self.check_transaction,
-#         }
-#         if method in method_mapping:
-#             return method_mapping[method](request)
-#         return Response({
-#             "jsonrpc": "2.0",
-#             "error": {"code": -32300, 'message': 'Subscription price sent incorrectly'}
-#         }, status=status.HTTP_200_OK)
-#
-#     def _get_user_with_active_subscriptions(self, user_id):
-#         return User.objects.filter(pk=user_id, is_verified=True).first()
-#
-#     def _validate_subscription_price(self, amount):
-#         if amount != settings.SUBSCRIPTION_PRICE:
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -31001, 'message': 'Subscription price sent incorrectly'}
-#             }, status=status.HTTP_200_OK)
-#         return None
-#
-#     @swagger_auto_schema(
-#         request_body=CheckPerformTransactionSerializer,
-#         responses={200: "result:{'allow':True}"}
-#     )
-#     def check_perform(self, request):
-#         serializer = CheckPerformTransactionSerializer(data=request.data)
-#         if not serializer.is_valid():
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -32700, 'message': serializer.errors}
-#             }, status=status.HTTP_200_OK)
-#
-#         error_response = self._validate_subscription_price(request.data['params']['amount'])
-#         if error_response:
-#             return error_response
-#
-#         user = self._get_user_with_active_subscriptions(
-#             serializer.validated_data['params']['account']['user_id']
-#         )
-#         if not user:
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -31050, 'message': "User not found"}
-#             }, status=status.HTTP_200_OK)
-#
-#         if user.rate == 2:
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -31050, 'message': "You are already subscribed."}
-#             }, status=status.HTTP_200_OK)
-#
-#         return Response({"jsonrpc": "2.0", 'result': {"allow": True}, 'ok': True}, status=status.HTTP_200_OK)
-#
-#     @swagger_auto_schema(
-#         request_body=CreateTransactionSerializer,
-#         responses={200: CreateTransactionResponseSerializer()},
-#         tags=['Transaction'],
-#     )
-#     def create_transaction(self, request):
-#         serializer = CreateTransactionSerializer(data=request.data)
-#         if not serializer.is_valid():
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -32700, 'message': serializer.errors}
-#             }, status=status.HTTP_200_OK)
-#
-#         error_response = self._validate_subscription_price(request.data['params']['amount'])
-#         if error_response:
-#             return error_response
-#
-#         user = self._get_user_with_active_subscriptions(
-#             serializer.validated_data['params']['account']['user_id']
-#         )
-#         if not user:
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -31050, 'message': "User not found"}
-#             }, status=status.HTTP_200_OK)
-#
-#         if user.rate == 2:
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -31050, 'message': "You are already subscribed."}
-#             }, status=status.HTTP_200_OK)
-#         transaction_obj = CreateTransaction.objects.filter(user_id=user,
-#                                                            state=1).first()
-#
-#         if transaction_obj and transaction_obj.payme_id == serializer.validated_data['params'][
-#             'id'] and datetime.now() - transaction_obj.time < timedelta(hours=12):
-#             response_data = {
-#                 "jsonrpc": "2.0",
-#                 "result": CreateTransactionResponseSerializer({
-#                     "transaction": transaction_obj.transaction.id,
-#                     "create_time": transaction_obj.created_at,
-#                     "state": transaction_obj.state
-#                 }).data,
-#                 "ok": True
-#             }
-#             return Response(response_data, status=status.HTTP_200_OK)
-#         if transaction_obj and transaction_obj.payme_id != serializer.validated_data['params']['id']:
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -31050, 'message': "Payment already created"}
-#             }, status=status.HTTP_200_OK)
-#         subscription = Subscription.objects.create(
-#             user=user,
-#             status=1,
-#             amount=serializer.validated_data['params']['amount'],
-#             pyment_date=timezone.now()
-#         )
-#
-#         transaction = CreateTransaction.objects.create(
-#             user=user,
-#             amount=serializer.validated_data['params']['amount'],
-#             payme_id=serializer.validated_data['params']['id'],
-#             transaction=subscription,
-#             state=1,
-#             time=serializer.validated_data['params']['time']
-#         )
-#
-#         response_data = {
-#             "jsonrpc": "2.0",
-#             "result": CreateTransactionResponseSerializer({
-#                 "transaction": subscription.id,
-#                 "create_time": transaction.created_at,
-#                 "state": transaction.state
-#             }).data,
-#             "ok": True
-#         }
-#         return Response(response_data, status=status.HTTP_200_OK)
-#
-#     @swagger_auto_schema(
-#         request_body=PerformTransactionSerializer,
-#         responses={200: PerformTransactionResponseSerializer()},
-#         tags=['Transaction'],
-#     )
-#     def perform_transaction(self, request):
-#         serializer = PerformTransactionSerializer(data=request.data)
-#         if not serializer.is_valid():
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -32700, 'message': serializer.errors}
-#             }, status=status.HTTP_200_OK)
-#
-#         transaction_id = serializer.validated_data['params']['id']
-#         transaction = CreateTransaction.objects.filter(payme_id=transaction_id).select_related('user',
-#                                                                                                'transaction').first()
-#
-#         if not transaction:
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -31003, 'message': 'Invalid or non-existent transaction.'}
-#             }, status=status.HTTP_200_OK)
-#         if transaction and transaction.state == 1:
-#             transaction.state = 2
-#             transaction.save()
-#
-#             subscription = transaction.transaction
-#             subscription.status = 2
-#             subscription.pyment_date = timezone.now()
-#             subscription.save()
-#
-#             user = transaction.user
-#             user.rate = 2
-#             user.login_time = timezone.now()
-#             user.save()
-#
-#             response_data = {
-#                 "jsonrpc": "2.0",
-#                 "result": PerformTransactionResponseSerializer({
-#                     "transaction": transaction.id,
-#                     "perform_time": transaction.updated_at,
-#                     "state": 2
-#                 }).data,
-#                 "ok": True
-#             }
-#         else:
-#             response_data = {
-#                 "jsonrpc": "2.0",
-#                 "result": PerformTransactionResponseSerializer({
-#                     "transaction": transaction.id,
-#                     "perform_time": transaction.updated_at,
-#                     "state": transaction.state,
-#                 }).data,
-#                 "ok": True
-#             }
-#         return Response(response_data, status=status.HTTP_200_OK)
-#
-#     @swagger_auto_schema(
-#         request_body=PerformTransactionSerializer,
-#         responses={200: CheckTransactionSerializer()},
-#     )
-#     def check_transaction(self, request):
-#         serializer = PerformTransactionSerializer(data=request.data)
-#         if not serializer.is_valid():
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -32700, 'message': serializer.errors}
-#             }, status=status.HTTP_200_OK)
-#
-#         transaction_obj = CreateTransaction.objects.filter(payme_id=serializer.validated_data['params']['id']).first()
-#         if not transaction_obj:
-#             return Response({
-#                 "jsonrpc": "2.0",
-#                 "error": {"code": -32400, 'message': "System error"}
-#             }, status=status.HTTP_200_OK)
-#         if transaction_obj and transaction_obj.state == 1:
-#             return Response(
-#                 {"jsonrpc": "2.0", 'result': CheckTransactionSerializer({'create_time': transaction_obj.created_at,
-#                                                                          "transaction": transaction_obj.transaction.id,
-#                                                                          "state": transaction_obj.state}).data,
-#                  'ok': True}, status=status.HTTP_200_OK)
-#         return Response(
-#             {"jsonrpc": "2.0", 'result': CheckTransactionSerializer({'create_time': transaction_obj.created_at,
-#                                                                      "perform_time": transaction_obj.updated_at,
-#                                                                      "transaction": transaction_obj.transaction.id,
-#                                                                      "state": transaction_obj.state}).data, 'ok': True},
-#             status=status.HTTP_200_OK)
+from datetime import datetime, timedelta
 
-
-from django.conf import settings
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from datetime import datetime, timedelta
+
 from authentication.models import User
-from .models import Subscription, CreateTransaction
+from .exception import PaymeCustomApiException, PaymeErrorCodes
+from .models import Subscription, Transaction
 from .serializers import (
     CreateTransactionSerializer, CreateTransactionResponseSerializer,
     PerformTransactionSerializer, PerformTransactionResponseSerializer,
-    CheckPerformTransactionSerializer, CheckTransactionSerializer
+    CheckPerformTransactionSerializer, CheckTransactionSerializer, CancelTransactionSerializer,
+    CancelTransactionSerializerResponse, GetStatementResponseSerializer
 )
+from .utils import check_amount
 
 
-class Transaction(ViewSet):
-    ERROR_CODES = {
-        'INVALID_AMOUNT': (-31001, "Subscription price sent incorrectly"),
-        'USER_NOT_FOUND': (-31050, "User not found"),
-        'ALREADY_SUBSCRIBED': (-31050, "You are already subscribed."),
-        'TRANSACTION_EXISTS': (-31050, "Payment already created"),
-        'TRANSACTION_INVALID': (-31003, "Invalid or non-existent transaction."),
-        'SYSTEM_ERROR': (-32400, "System error"),
-    }
-
-    def response_error(self, code_key, extra=None):
-        error = {"jsonrpc": "2.0",
-                 "error": {"code": self.ERROR_CODES[code_key][0], "message": self.ERROR_CODES[code_key][1]}}
-        if extra:
-            error["error"].update(extra)
-        return Response(error, status=status.HTTP_200_OK)
-
-    def _get_user_with_active_subscriptions(self, user_id):
-        return User.objects.filter(pk=user_id, is_verified=True).first()
-
-    def _validate_subscription_price(self, amount):
-        if amount != settings.SUBSCRIPTION_PRICE:
-            return self.response_error('INVALID_AMOUNT')
-        return None
-
+class TransactionViewSet(ViewSet):
     def transaction(self, request):
         method = request.data.get('method')
         method_mapping = {
@@ -290,8 +26,12 @@ class Transaction(ViewSet):
             "CreateTransaction": self.create_transaction,
             "PerformTransaction": self.perform_transaction,
             "CheckTransaction": self.check_transaction,
+            'CancelTransaction': self.cancel_transaction,
+            "GetStatement": self.statement_transaction,
         }
-        return method_mapping.get(method, lambda _: self.response_error('INVALID_AMOUNT'))(request)
+        if method not in method_mapping:
+            raise PaymeCustomApiException(PaymeErrorCodes.ERROR_REQUEST)
+        return method_mapping[method](request)
 
     @swagger_auto_schema(
         request_body=CheckPerformTransactionSerializer,
@@ -299,44 +39,24 @@ class Transaction(ViewSet):
     )
     def check_perform(self, request):
         serializer = CheckPerformTransactionSerializer(data=request.data)
-        if not serializer.is_valid():
-            return self.response_error('INVALID_AMOUNT', {'message': serializer.errors})
-
-        error_response = self._validate_subscription_price(request.data['params']['amount'])
-        if error_response:
-            return error_response
-
-        user = self._get_user_with_active_subscriptions(serializer.validated_data['params']['account']['user_id'])
-        if not user:
-            return self.response_error('USER_NOT_FOUND')
-
-        if user.rate == 2:
-            return self.response_error('ALREADY_SUBSCRIBED')
-
+        serializer.is_valid(raise_exception=True)
+        amount = serializer.validated_data['params']['amount']
+        user_id = serializer.validated_data['params']['account']['user_id']
+        check_amount(amount)
+        if User.objects.filter(id=user_id, rate=2).exists():
+            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_EXISTS)
         return Response({"jsonrpc": "2.0", 'result': {"allow": True}, 'ok': True}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        request_body=CreateTransactionSerializer,
-        responses={200: CreateTransactionResponseSerializer()},
-        tags=['Transaction'],
-    )
     def create_transaction(self, request):
         serializer = CreateTransactionSerializer(data=request.data)
-        if not serializer.is_valid():
-            return self.response_error('INVALID_AMOUNT', {'message': serializer.errors})
-
-        error_response = self._validate_subscription_price(request.data['params']['amount'])
-        if error_response:
-            return error_response
-
-        user = self._get_user_with_active_subscriptions(serializer.validated_data['params']['account']['user_id'])
-        if not user:
-            return self.response_error('USER_NOT_FOUND')
-
-        if user.rate == 2:
-            return self.response_error('ALREADY_SUBSCRIBED')
-
-        transaction_obj = CreateTransaction.objects.filter(user=user, state=1).first()
+        serializer.is_valid(raise_exception=True)
+        amount = serializer.validated_data['params']['amount']
+        user_id = serializer.validated_data['params']['account']['user_id']
+        check_amount(amount)
+        if User.objects.filter(id=user_id, rate=2).exists():
+            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_EXISTS)
+        transaction_obj = Transaction.objects.filter(payme_id=serializer.validated_data['params']['id'],
+                                                     state=1).first()
         if transaction_obj and transaction_obj.payme_id == serializer.validated_data['params']['id'] and \
                 datetime.now() - transaction_obj.time < timedelta(hours=12):
             return Response({
@@ -350,13 +70,13 @@ class Transaction(ViewSet):
             }, status=status.HTTP_200_OK)
         if transaction_obj and transaction_obj.payme_id != serializer.validated_data['params']['id'] and \
                 datetime.now() - transaction_obj.time < timedelta(hours=12):
-                return self.response_error('TRANSACTION_EXISTS')
-
-        subscription = Subscription.objects.create(
-            user=user, status=1, amount=serializer.validated_data['params']['amount'], pyment_date=timezone.now()
-        )
-        transaction = CreateTransaction.objects.create(
-            user=user, amount=serializer.validated_data['params']['amount'],
+            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_EXISTS)
+        subscription = Subscription.objects.create(user_id=user_id, status=1,
+                                                   amount=serializer.validated_data['params']['amount'],
+                                                   pyment_date=timezone.now()
+                                                   )
+        transaction = Transaction.objects.create(
+            user_id=user_id, amount=serializer.validated_data['params']['amount'],
             payme_id=serializer.validated_data['params']['id'], transaction=subscription, state=1,
             time=serializer.validated_data['params']['time']
         )
@@ -379,17 +99,18 @@ class Transaction(ViewSet):
     def perform_transaction(self, request):
         serializer = PerformTransactionSerializer(data=request.data)
         if not serializer.is_valid():
-            return self.response_error('INVALID_AMOUNT', {'message': serializer.errors})
+            raise PaymeCustomApiException(PaymeErrorCodes.OPERATION_CANNOT_PERFORMED)
 
-        transaction = CreateTransaction.objects.filter(
+        transaction = Transaction.objects.filter(
             payme_id=serializer.validated_data['params']['id']
         ).select_related('user', 'transaction').first()
 
         if not transaction:
-            return self.response_error('TRANSACTION_INVALID')
+            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_NOT_FOUND)
 
         if transaction.state == 1:
             transaction.state = 2
+            transaction.perform_time = timezone.now()
             transaction.save()
             subscription = transaction.transaction
             subscription.status = 2
@@ -404,7 +125,7 @@ class Transaction(ViewSet):
             "jsonrpc": "2.0",
             "result": PerformTransactionResponseSerializer({
                 "transaction": transaction.id,
-                "perform_time": transaction.updated_at,
+                "perform_time": transaction.perform_time,
                 "state": transaction.state
             }).data,
             "ok": True
@@ -417,20 +138,68 @@ class Transaction(ViewSet):
     def check_transaction(self, request):
         serializer = PerformTransactionSerializer(data=request.data)
         if not serializer.is_valid():
-            return self.response_error('INVALID_AMOUNT', {'message': serializer.errors})
+            raise PaymeCustomApiException(PaymeErrorCodes.OPERATION_CANNOT_PERFORMED)
 
-        transaction = CreateTransaction.objects.filter(
+        transaction = Transaction.objects.filter(
             payme_id=serializer.validated_data['params']['id']
         ).first()
 
         if not transaction:
-            return self.response_error('SYSTEM_ERROR')
+            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_NOT_FOUND)
 
         response_data = CheckTransactionSerializer({
             "create_time": transaction.created_at,
-            "perform_time": transaction.updated_at if transaction.state != 1 else None,
+            "perform_time": transaction.perform_time if transaction.state != 1 else None,
             "transaction": transaction.transaction.id,
             "state": transaction.state
         }).data
 
         return Response({"jsonrpc": "2.0", "result": response_data, "ok": True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=CancelTransactionSerializer()
+    )
+    def cancel_transaction(self, request):
+        serializer = CancelTransactionSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        transaction_obj = Transaction.objects.filter(id=serializer.validated_data['params']['id']).first()
+        if not transaction_obj:
+            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_NOT_FOUND)
+        if transaction_obj.state == 1:
+            transaction_obj.state = -1
+        else:
+            transaction_obj.state = -2
+        transaction_obj.reason = serializer.validated_data['params']['reason']
+        transaction_obj.cancel_time = timezone.now()
+        transaction_obj.save()
+        transaction_obj.user.rate = 1
+        transaction_obj.user.login_time = timezone.now()
+        transaction_obj.user.save()
+        transaction_obj.transaction.status = 3
+        transaction_obj.transaction.save()
+        return Response({
+            "jsonrpc": "2.0",
+            "result": {CancelTransactionSerializerResponse(
+                {"transaction": transaction_obj.transaction.id, 'cancel_time': transaction_obj.cancel_time,
+                 'state': transaction_obj.state}).data}}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        responses={200: GetStatementResponseSerializer(many=True)},
+    )
+    def statement_transaction(self, request):
+        # Get 'from' and 'to' from request
+        from_ = request.data.get('from')
+        to_ = request.data.get('to')
+
+        # Filter transactions based on the given time range
+        transactions = Transaction.objects.filter(created_at__gte=from_, created_at__lte=to_, reason__isnull=True)
+
+        # If no transactions found, return empty list
+        if not transactions:
+            return Response({"result": {'transactions': []}})
+
+        # Serialize the data
+        serializer = GetStatementResponseSerializer(transactions, many=True)
+
+        # Return the response
+        return Response({"result": {'transactions': serializer.data}}, status=status.HTTP_200_OK)
