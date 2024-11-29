@@ -188,9 +188,9 @@ class TransactionViewSet(ViewSet):
         transaction_obj.transaction.save()
         return Response({
             "jsonrpc": "2.0",
-            "result": {CancelTransactionSerializerResponse(
+            "result": CancelTransactionSerializerResponse(
                 {"transaction": transaction_obj.transaction.id, 'cancel_time': transaction_obj.cancel_time,
-                 'state': transaction_obj.state}).data}}, status=status.HTTP_200_OK)
+                 'state': transaction_obj.state}).data}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         responses={200: GetStatementResponseSerializer(many=True)},
