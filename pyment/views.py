@@ -1,6 +1,5 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from django.utils.dateparse import parse_datetime
-from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
@@ -81,7 +80,7 @@ class TransactionViewSet(ViewSet):
             raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_EXISTS)
         subscription = Subscription.objects.create(user_id=user_id, status=1,
                                                    amount=serializer.validated_data['params']['amount'],
-                                                   pyment_date=timezone.now()
+                                                   pyment_date=datetime.now()
                                                    )
         transaction = Transaction.objects.create(
             user_id=user_id, amount=serializer.validated_data['params']['amount'],
@@ -118,15 +117,15 @@ class TransactionViewSet(ViewSet):
 
         if transaction.state == 1:
             transaction.state = 2
-            transaction.perform_time = timezone.now()
+            transaction.perform_time = datetime.now()
             transaction.save()
             subscription = transaction.transaction
             subscription.status = 2
-            subscription.pyment_date = timezone.now()
+            subscription.pyment_date = datetime.now()
             subscription.save()
             user = transaction.user
             user.rate = 2
-            user.login_time = timezone.now()
+            user.login_time = datetime.now()
             user.save()
 
         return Response({
@@ -213,8 +212,11 @@ class TransactionViewSet(ViewSet):
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         # Filter transactions based on the given time range
 
-        transactions = Transaction.objects.filter(time__gte=date.get('from_'), time__lte=date.get('to'),
-                                                  reason__isnull=True)
+        # transactions = Transaction.objects.filter(time__gte=date.get('from_'), time__lte=date.get('to'),
+        #                                           reason__isnull=True)
+        from_datetime = datetime.fromtimestamp(int(from_) / 1000, tz=timezone.utc)
+        to_datetime = datetime.fromtimestamp(int(to_) / 1000, tz=timezone.utc)
+        transactions = Transaction.objects.filter(time__gte=from_datetime, time__lte=to_datetime)
         # If no transactions found, return empty list
         if not transactions:
             raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
