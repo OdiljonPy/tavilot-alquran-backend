@@ -102,7 +102,7 @@ class CheckTransactionSerializer(serializers.Serializer):
     cancel_time = serializers.DateTimeField(allow_null=True)
     transaction = serializers.CharField()
     state = serializers.IntegerField()
-    reason = serializers.CharField(allow_null=True)
+    reason = serializers.IntegerField(allow_null=True)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
