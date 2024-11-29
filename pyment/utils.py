@@ -25,7 +25,7 @@ def convert_timestamps(from_millis, to_millis):
         from_millis = int(from_millis)
         from_ = datetime.fromtimestamp(from_millis / 1000, tz=timezone.utc)
     else:
-        return {"error": "'from_' value must be a valid millisecond timestamp."}
+        raise PaymeCustomApiException(PaymeErrorCodes.INVALID_AMOUNT)
 
     # Check and convert 'to_millis'
     if isinstance(to_millis, (int, str)) and str(to_millis).isdigit():

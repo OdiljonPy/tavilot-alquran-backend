@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-
+from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -15,7 +15,7 @@ from .serializers import (
     CheckPerformTransactionSerializer, CheckTransactionSerializer, CancelTransactionSerializer,
     CancelTransactionSerializerResponse, GetStatementResponseSerializer
 )
-from .utils import check_amount
+from .utils import check_amount, convert_timestamps
 
 
 class TransactionViewSet(ViewSet):
@@ -109,7 +109,7 @@ class TransactionViewSet(ViewSet):
         ).select_related('user', 'transaction').first()
 
         if not transaction:
-            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_NOT_FOUND)
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
 
         if transaction.state == 1:
             transaction.state = 2
@@ -148,7 +148,7 @@ class TransactionViewSet(ViewSet):
         ).first()
 
         if not transaction:
-            raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_NOT_FOUND)
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
 
         response_data = CheckTransactionSerializer({
             "create_time": transaction.created_at,
@@ -164,7 +164,8 @@ class TransactionViewSet(ViewSet):
     )
     def cancel_transaction(self, request):
         serializer = CancelTransactionSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        if not serializer.is_valid():
+            raise PaymeCustomApiException(PaymeErrorCodes.UNABLE_CANCEL)
         transaction_obj = Transaction.objects.filter(id=serializer.validated_data['params']['id']).first()
         if not transaction_obj:
             raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_NOT_FOUND)
@@ -191,11 +192,13 @@ class TransactionViewSet(ViewSet):
     )
     def statement_transaction(self, request):
         # Get 'from' and 'to' from request
-        from_ = request.data.get('from')
-        to_ = request.data.get('to')
-
+        from_ = request.data["params"].get('from')
+        to_ = request.data["params"].get('to')
+        date = convert_timestamps(from_, to_)
+        if not date.get('from_') or not date.get('to_'):
+            return Response({"result": {'transactions': []}})
         # Filter transactions based on the given time range
-        transactions = Transaction.objects.filter(created_at__gte=from_, created_at__lte=to_, reason__isnull=True)
+        transactions = Transaction.objects.filter(created_at__gte=date.get('from_'), created_at__lte=date.get('to'), reason__isnull=True)
 
         # If no transactions found, return empty list
         if not transactions:
