@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Subscription, CreateTransaction
+from .models import Subscription, Transaction
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
@@ -11,9 +11,9 @@ class SubscriptionAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(CreateTransaction)
+@admin.register(Transaction)
 class CreateTransactionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'payme_id', 'amount', 'state', 'time')
+    list_display = ('id','payme_id', 'amount', 'state', 'time')
     list_display_links = ('id', 'payme_id')
     search_fields = ('state', 'payme_id')
 

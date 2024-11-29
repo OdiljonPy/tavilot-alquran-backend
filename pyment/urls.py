@@ -1,8 +1,8 @@
 from django.urls import path
 
-from .views import Transaction
+from .views import TransactionViewSet
 
 urlpatterns = [
-    path("", Transaction.as_view({"post":"transaction"}), name="transaction"),
+    path("", TransactionViewSet.as_view({"post":"transaction"}), name="transaction"),
 
 ]
