@@ -170,7 +170,7 @@ class TransactionViewSet(ViewSet):
             raise PaymeCustomApiException(PaymeErrorCodes.UNABLE_CANCEL)
         transaction_obj = Transaction.objects.filter(id=serializer.validated_data['params']['id']).first()
         if not transaction_obj:
-            raise PaymeCustomApiException(PaymeErrorCodes.ERROR_REQUEST)
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         if transaction_obj.state == 1:
             transaction_obj.state = -1
         else:
@@ -198,13 +198,13 @@ class TransactionViewSet(ViewSet):
         to_ = request.data["params"].get('to')
         date = convert_timestamps(from_, to_)
         if not date.get('from_') or not date.get('to_'):
-            raise PaymeCustomApiException(PaymeErrorCodes.ERROR_REQUEST)
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
         # Filter transactions based on the given time range
         transactions = Transaction.objects.filter(created_at__gte=date.get('from_'), created_at__lte=date.get('to'), reason__isnull=True)
 
         # If no transactions found, return empty list
         if not transactions:
-            raise PaymeCustomApiException(PaymeErrorCodes.ERROR_REQUEST)
+            raise PaymeCustomApiException(PaymeErrorCodes.INSUFFICIENT_METHOD)
 
         # Serialize the data
         serializer = GetStatementResponseSerializer(transactions, many=True)
