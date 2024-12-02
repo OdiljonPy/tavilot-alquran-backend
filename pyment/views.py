@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from django.utils.dateparse import parse_datetime
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
@@ -65,7 +65,7 @@ class TransactionViewSet(ViewSet):
         transaction_obj = Transaction.objects.filter(user_id=user_id,
                                                      state=1).first()
         if transaction_obj and transaction_obj.payme_id == serializer.validated_data['params']['id'] and \
-                datetime.now() - transaction_obj.time < timedelta(hours=12):
+                timezone.now() - transaction_obj.time < timedelta(hours=12):
             return Response({
                 "jsonrpc": "2.0",
                 "result": CreateTransactionResponseSerializer({
@@ -76,11 +76,11 @@ class TransactionViewSet(ViewSet):
                 "ok": True
             }, status=status.HTTP_200_OK)
         if transaction_obj and transaction_obj.payme_id != serializer.validated_data['params']['id'] and \
-                datetime.now() - transaction_obj.time < timedelta(hours=12):
+                timezone.now() - transaction_obj.time < timedelta(hours=12):
             raise PaymeCustomApiException(PaymeErrorCodes.TRANSACTION_EXISTS)
         subscription = Subscription.objects.create(user_id=user_id, status=1,
                                                    amount=serializer.validated_data['params']['amount'],
-                                                   pyment_date=datetime.now()
+                                                   pyment_date=timezone.now()
                                                    )
         transaction = Transaction.objects.create(
             user_id=user_id, amount=serializer.validated_data['params']['amount'],
@@ -117,15 +117,15 @@ class TransactionViewSet(ViewSet):
 
         if transaction.state == 1:
             transaction.state = 2
-            transaction.perform_time = datetime.now()
+            transaction.perform_time = timezone.now()
             transaction.save()
             subscription = transaction.transaction
             subscription.status = 2
-            subscription.pyment_date = datetime.now()
+            subscription.pyment_date = timezone.now()
             subscription.save()
             user = transaction.user
             user.rate = 2
-            user.login_time = datetime.now()
+            user.login_time = timezone.now()
             user.save()
 
         return Response({
