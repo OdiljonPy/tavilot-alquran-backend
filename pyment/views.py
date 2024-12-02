@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone as timezone_datetime
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -214,8 +214,8 @@ class TransactionViewSet(ViewSet):
 
         # transactions = Transaction.objects.filter(time__gte=date.get('from_'), time__lte=date.get('to'),
         #                                           reason__isnull=True)
-        from_datetime = datetime.fromtimestamp(int(from_) / 1000, tz=timezone.utc)
-        to_datetime = datetime.fromtimestamp(int(to_) / 1000, tz=timezone.utc)
+        from_datetime = datetime.fromtimestamp(int(from_) / 1000, tz=timezone_datetime.utc)
+        to_datetime = datetime.fromtimestamp(int(to_) / 1000, tz=timezone_datetime.utc)
         transactions = Transaction.objects.filter(time__gte=from_datetime, time__lte=to_datetime)
         # If no transactions found, return empty list
         if not transactions:
