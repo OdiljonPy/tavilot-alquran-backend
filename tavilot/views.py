@@ -142,7 +142,7 @@ class PostViewSet(ViewSet):
         tags=['Post'],
     )
     def post_detail(self, request, pk):
-        data = Post.objects.filter(id=pk, is_published=True).first()
+        data = Post.objects.select_related('category').filter(id=pk, is_published=True).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
         serializer = PostSerializer(data, context={'request': request})

@@ -1,5 +1,6 @@
 from django.contrib.auth.hashers import check_password
 from django.utils import timezone
+from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.response import Response
@@ -8,13 +9,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from exception.error_message import ErrorCodes
 from exception.exceptions import CustomApiException
-from pyment.models import Subscription
 from utils.send_message import send_telegram_otp_code
 from .models import User, OTP, ResetToken
-from .serializers import UserSerializer, PhoneNumberSerializer, OTPSerializer, OTPTokenSerializer, \
-    UserLoginRequestSerializer, TokenSerializer, ChangePasswordRequestSerializer, OTPTokenWithPasswordSerializer
 from .utils import check_otp, user_existing, check_otp_attempts
-from django.conf import settings
+from .serializers import (UserSerializer, PhoneNumberSerializer,
+                          OTPSerializer, OTPTokenSerializer,
+                          UserLoginRequestSerializer, TokenSerializer,
+                          ChangePasswordRequestSerializer, OTPTokenWithPasswordSerializer)
 
 
 class UserViewSet(ViewSet):

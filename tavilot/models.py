@@ -12,8 +12,8 @@ CHAPTER_TYPE_CHOICES = (
 
 
 class Juz(BaseModel):
-    number = models.PositiveIntegerField(unique=True)
-    title = models.CharField(max_length=500)
+    number = models.PositiveIntegerField(unique=True, verbose_name="порядковый номер джуз")
+    title = models.CharField(max_length=250, verbose_name="заголовок")
 
     def __str__(self):
         return str(self.number)
@@ -27,12 +27,11 @@ class Juz(BaseModel):
 class Chapter(BaseModel):
     juz = models.ManyToManyField(Juz, verbose_name='джуз', related_name='juz_chapter')
     name = models.CharField(max_length=150, verbose_name="название")
-    name_arabic = models.CharField(max_length=150, verbose_name='название на арабском языке', blank=True, null=True)
+    name_arabic = models.CharField(max_length=150, verbose_name='название на арабском языке')
     description = HTMLField(verbose_name="описание")
-    verse_number = models.PositiveIntegerField(verbose_name='количество аятов', blank=True, null=True)
-    number = models.PositiveIntegerField(unique=True)
-    type_choice = models.IntegerField(choices=CHAPTER_TYPE_CHOICES, verbose_name='место ниспослания суры',
-                                      blank=True, null=True)
+    verse_number = models.PositiveIntegerField(verbose_name='количество аятов')
+    number = models.PositiveIntegerField(unique=True, verbose_name="порядковый номер сура")
+    type_choice = models.IntegerField(choices=CHAPTER_TYPE_CHOICES, verbose_name='место ниспослания суры')
 
 
     def __str__(self):
@@ -53,7 +52,7 @@ class Verse(BaseModel):
     description = HTMLField(verbose_name="описание аята")
 
     def __str__(self):
-        return str(self.id)
+        return f'Сура: {self.chapter.name} айат: {self.number}'
 
     def clean(self):
         super().clean()
@@ -74,21 +73,6 @@ class Verse(BaseModel):
         ]
 
 
-class Sales(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    item = models.CharField(max_length=150, verbose_name="элемент")
-    price = models.FloatField(default=0, verbose_name="цена")
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Продажa'
-        verbose_name_plural = 'Продажи'
-        ordering = ('-created_at',)
-
-
 class AboutUs(BaseModel):
     description = HTMLField(verbose_name='описание')
 
@@ -103,7 +87,7 @@ class AboutUs(BaseModel):
 
 class Category(BaseModel):
     name = models.CharField(max_length=255, verbose_name='навзание')
-    title = models.CharField(max_length=500, verbose_name='заголовок', blank=True, null=True)
+    title = models.CharField(max_length=500, verbose_name='заголовок')
 
     def __str__(self):
         return self.name
@@ -114,41 +98,18 @@ class Category(BaseModel):
         ordering = ('-created_at',)
 
 
-class SubCategory(BaseModel):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='post_subcategory',
-                                 verbose_name="категория")
-    name = models.CharField(max_length=255, verbose_name="название")
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Подкатегория'
-        verbose_name_plural = 'Подкатегории'
-        ordering = ('-created_at',)
-
 
 class Post(BaseModel):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="категория")
-    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, blank=True, null=True,
-                                     verbose_name="подкатегория")
     title = models.CharField(max_length=300, verbose_name="заголовок")
-    image = models.ImageField(upload_to='post/', verbose_name='изображение')
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
-                            validators=[FileExtensionValidator(['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'zip'])])
-    file_type = models.CharField(max_length=10, blank=True, null=True)
-    description = HTMLField(verbose_name='описание')
+                            validators=[FileExtensionValidator(['pdf'])])
+    description = HTMLField(verbose_name='описание', blank=True, null=True)
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
-    is_premium = models.BooleanField(default=False, verbose_name="премиум")
-
-    def clean(self):
-        super().clean()
-        self.file_type = str(self.file.name).split('.')[-1]
-        self.save()
 
 
     def __str__(self):
-        return str(self.id)
+        return self.title
 
     class Meta:
         verbose_name = 'Пост'

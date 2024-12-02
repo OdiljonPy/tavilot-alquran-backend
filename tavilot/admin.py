@@ -1,10 +1,5 @@
 from django.contrib import admin
-from .models import Chapter, Verse, Post, Category, AboutUs, SubCategory, Juz
-
-
-class SubCategoryTabularInline(admin.TabularInline):
-    model = SubCategory
-    extra = 1
+from .models import Chapter, Verse, Post, Category, AboutUs, Juz
 
 
 @admin.register(Chapter)
@@ -27,16 +22,14 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
     list_display_links = ('id', 'name')
     search_fields = ('name',)
-    inlines = [SubCategoryTabularInline]
 
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'category', 'file', 'is_premium', 'is_published')
+    list_display = ('id', 'title', 'category', 'file', 'is_published')
     list_display_links = ('id', 'category', 'is_published')
     search_fields = ('title', 'description')
-    list_filter = ('category', 'is_published', 'is_premium')
-    exclude = ('file_type',)
+    list_filter = ('category', 'is_published')
 
 
 
