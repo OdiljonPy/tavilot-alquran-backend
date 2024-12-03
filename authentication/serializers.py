@@ -1,7 +1,10 @@
 from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
-
+from rest_framework_simplejwt.tokens import RefreshToken
 from authentication.models import User, OTP
+from django.utils import timezone
+from exception.error_message import ErrorCodes
+from exception.exceptions import CustomApiException
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -53,3 +56,16 @@ class ChangePasswordRequestSerializer(serializers.Serializer):
 class OTPTokenWithPasswordSerializer(serializers.Serializer):
     otp_token = serializers.CharField()
     password = serializers.CharField(required=True)
+
+
+class RefreshTokenSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()
+
+    def validate(self, value):
+        try:
+            token = RefreshToken(value.get('refresh_token'))
+        except Exception as e:
+            raise serializers.ValidationError(e)
+        if token.get('exp') < timezone.now().timestamp():
+            raise CustomApiException(ErrorCodes.VALIDATION_FAILED, message='Refresh token expired')
+        return value
