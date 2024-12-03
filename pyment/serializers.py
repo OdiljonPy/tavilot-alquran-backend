@@ -7,6 +7,7 @@ from exception.error_message import ErrorCodes
 from rest_framework import serializers
 from .exception import PaymeErrorCodes, PaymeCustomApiException
 from authentication.models import User
+from .models import Prepare, Complete
 
 
 class AccountSerializer(serializers.Serializer):
@@ -158,7 +159,6 @@ class GetStatementResponseSerializer(serializers.Serializer):
     state = serializers.IntegerField(allow_null=True, required=False)
     reason = serializers.IntegerField(allow_null=True, required=False)
 
-
     def get_account(self, obj):
         """
         Return the account information (e.g., user's phone number).
@@ -183,3 +183,33 @@ class GetStatementResponseSerializer(serializers.Serializer):
         representation['account'] = account_data
 
         return representation
+
+
+class PrepareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prepare
+        fields = (
+            'id', 'click_trans_id', 'service_id', 'click_paydoc_id', 'merchant_trans_id', 'amount',
+            'error', 'error_note', 'sign_time', 'sign_string')
+
+
+class CompleteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Complete
+        fields = (
+            'id', 'click_trans_id', 'service_id', 'click_paydoc_id', 'merchant_trans_id', 'amount',
+            'error', 'error_note', 'sign_time', 'sign_string', 'merchant_prepare_id')
+
+
+class ClickValidateSerializer(serializers.Serializer):
+    click_trans_id = serializers.IntegerField()
+    service_id = serializers.IntegerField()
+    click_paydoc_id = serializers.IntegerField()
+    merchant_trans_id = serializers.IntegerField()
+    merchant_prepare_id = serializers.IntegerField(required=False)
+    amount = serializers.FloatField()
+    action = serializers.IntegerField()
+    error = serializers.IntegerField()
+    error_note = serializers.CharField()
+    sign_time = serializers.CharField()
+    sign_string = serializers.CharField()

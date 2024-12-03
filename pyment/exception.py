@@ -2,6 +2,7 @@ from enum import Enum
 
 from rest_framework import status
 from rest_framework.exceptions import APIException
+from rest_framework.exceptions import ValidationError
 
 
 class PaymeErrorCodes(Enum):
@@ -13,8 +14,8 @@ class PaymeErrorCodes(Enum):
     TRANSACTION_NOT_FOUND = -31003
     UNABLE_CANCEL = -31007
     OPERATION_CANNOT_PERFORMED = -31008
-    ERROR_REQUEST=-32300
-    INSUFFICIENT_METHOD=-32504
+    ERROR_REQUEST = -32300
+    INSUFFICIENT_METHOD = -32504
 
 
 error_messages = {
@@ -27,9 +28,8 @@ error_messages = {
     -31008: {
         "result": "Operation cannot be performed. The error occurs if the transaction state does not allow the operation"
                   " to be performed.", "http_status": status.HTTP_200_OK},
-    -32300:{"result": "The error occurs if the request method is not POST.", "http_status": status.HTTP_200_OK},
-    -32504:{"result": "Insufficient privileges to execute the method..", "http_status": status.HTTP_200_OK}
-
+    -32300: {"result": "The error occurs if the request method is not POST.", "http_status": status.HTTP_200_OK},
+    -32504: {"result": "Insufficient privileges to execute the method..", "http_status": status.HTTP_200_OK}
 
 }
 
@@ -52,3 +52,27 @@ class PaymeCustomApiException(APIException):
                 "code": error_code.value,
             },
         }
+
+
+class ClickCustomApiException(ValidationError):
+    def __init__(self, enum_code, click_trans_id, merchant_trans_id):
+        error, error_note = enum_code.value
+        self.detail = {
+            'click_trans_id': click_trans_id,
+            'merchant_trans_id': merchant_trans_id,
+            'error': error,
+            'merchant_prepare_id': '',
+            'error_note': error_note,
+            'ok': False,
+            'result': ''
+        }
+
+
+class ClickEnumException(Enum):
+    ClickRequestError = (-8, 'Error in request from click')
+    AlreadyPaidError = (-4, 'Already paid')
+    SignCheckFailedError = (-1, 'SIGN CHECK FAILED!')
+    UserNotFound = (-5, 'User does not exist')
+    TransactionError = (-9, 'Transaction cancelled')
+    IncorrectParameterAmount = (-2, 'Incorrect parameter amount')
+    TransactionNotExist = (-6, 'Transaction does not exist')
