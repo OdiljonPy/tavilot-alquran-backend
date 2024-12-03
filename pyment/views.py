@@ -12,9 +12,10 @@ from .serializers import (
     CreateTransactionSerializer, CreateTransactionResponseSerializer,
     PerformTransactionSerializer, PerformTransactionResponseSerializer,
     CheckPerformTransactionSerializer, CheckTransactionSerializer, CancelTransactionSerializer,
-    CancelTransactionSerializerResponse, GetStatementResponseSerializer
+    CancelTransactionSerializerResponse, GetStatementResponseSerializer,
+    PrepareSerializer, CompleteSerializer, ClickValidateSerializer
 )
-from .utils import check_amount, convert_timestamps
+from .utils import check_amount, convert_timestamps, validate_click_data
 
 
 class TransactionViewSet(ViewSet):
@@ -226,3 +227,40 @@ class TransactionViewSet(ViewSet):
 
         # Return the response
         return Response({"result": {'transactions': serializer.data}}, status=status.HTTP_200_OK)
+
+
+class ClickTransactionViewSet(ViewSet):
+    @swagger_auto_schema(
+        request_body=ClickValidateSerializer,
+        responses={200: PrepareSerializer()},
+    )
+    def prepare(self, request):
+        data = request.data
+        validate = validate_click_data(data)
+        return Response(
+            data={
+                'click_trans_id': data.get('click_trans_id'),
+                'merchant_trans_id': data.get('merchant_trans_id'),
+                'error': 0,
+                'merchant_prepare_id': validate,
+                'error_note': data.get('error')
+            }, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        request_body=ClickValidateSerializer,
+        responses={200: CompleteSerializer()},
+    )
+    def complete(self, request):
+        data = request.data
+        validate = validate_click_data(data)
+        user = User.objects.filter(id=data.get('merchant_trans_id')).first()
+        user.rate = 2
+        user.save(update_fields=['rate'])
+        return Response(
+            data={
+                'click_trans_id': data.get('click_trans_id'),
+                'merchant_trans_id': data.get('merchant_trans_id'),
+                'error': 0,
+                'merchant_confirm_id': validate,
+                'error_note': data.get('error')
+            }, status=status.HTTP_200_OK)
