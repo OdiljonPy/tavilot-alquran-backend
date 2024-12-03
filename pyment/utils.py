@@ -48,8 +48,6 @@ def check_sign_string(click_trans_id, merchant_trans_id, amount, action, sign_ti
     payload = (f'{click_trans_id}{settings.SERVICE_ID}{settings.SECRET_KEY}{merchant_trans_id}{amount}'
                f'{action}{sign_time}')
     encoded_payload = encrypt(payload)
-    print('* ' * 40)
-    print(encoded_payload)
     return encoded_payload == sign_string
 
 
@@ -58,8 +56,6 @@ def check_sign_string_complete(
     payload = (f'{click_trans_id}{settings.SERVICE_ID}{settings.SECRET_KEY}{merchant_trans_id}'
                f'{merchant_prepare_id}{amount}{action}{sign_time}')
     encoded_payload = encrypt(payload)
-    print('* ' * 40)
-    print(encoded_payload)
     return encoded_payload == sign_string
 
 
