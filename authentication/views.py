@@ -67,7 +67,7 @@ class UserViewSet(ViewSet):
 
         obj.save()
         send_telegram_otp_code(obj)
-        return Response(data={'result': {'otp_key': obj.otp_key, 'otp_code': obj.otp_code}, 'ok': True},
+        return Response(data={'result': {'otp_key': obj.otp_key}, 'ok': True},
                         status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema(
