@@ -43,7 +43,9 @@ class UserViewSet(ViewSet):
         tags=['User']
     )
     def subscription_check(self, request):
-        return Response({"result": User.objects.filter(id=request.user.id, rate=2).exists(), 'ok': True,
+        user_id = request.user.id
+        return Response({"result": User.objects.filter(id=request.user.id, rate=2).exists(),
+                         'user_id': user_id, 'ok': True,
                          'prays': settings.SUBSCRIPTION_PRICE},
                         status=status.HTTP_200_OK)
 
