@@ -6,7 +6,7 @@ from .exception import ClickCustomApiException, ClickEnumException
 
 
 def check_amount(amount):
-    if settings.SUBSCRIPTION_PRICE != amount:
+    if settings.SUBSCRIPTION_PRICE_PAYME != amount:
         raise PaymeCustomApiException(PaymeErrorCodes.INVALID_AMOUNT)
     return
 
@@ -79,7 +79,7 @@ def validate_click_data(data):
             click_trans_id=data.get('click_trans_id'),
             merchant_trans_id=data.get('merchant_trans_id'),
         )
-    if int(data.get('amount')) != settings.SUBSCRIPTION_PRICE:
+    if int(data.get('amount')) != settings.SUBSCRIPTION_PRICE_CLICK:
         raise ClickCustomApiException(
             enum_code=ClickEnumException.IncorrectParameterAmount,
             click_trans_id=data.get('click_trans_id'),
