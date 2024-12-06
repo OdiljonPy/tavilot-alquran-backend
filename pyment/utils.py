@@ -69,7 +69,7 @@ def validate_click_data(data):
     from .serializers import PrepareSerializer, CompleteSerializer
     from .models import Payment
 
-    if int(data.get('action')) not in (1, 2):
+    if int(data.get('action')) not in (0, 1):
         print('* ' * 55)
         print('Action must be either 1 or 2')
         raise ClickPrepareException(
@@ -99,7 +99,7 @@ def validate_click_data(data):
                 merchant_trans_id=str(data.get('merchant_trans_id')),
                 merchant_prepare_id=prepare.id
             )
-        if int(data.get('amount')) != settings.SUBSCRIPTION_PRICE:
+        if int(data.get('amount')) != settings.SUBSCRIPTION_PRICE_CLICK:
             raise ClickPrepareException(
                 enum_code=ClickPrepareCode.IncorrectParameterAmount,
                 click_trans_id=int(data.get('click_trans_id')),
