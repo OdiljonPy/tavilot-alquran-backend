@@ -255,7 +255,8 @@ class ClickTransactionViewSet(ViewSet):
         validate = validate_click_data(data)
         user = User.objects.filter(id=data.get('merchant_trans_id')).first()
         user.rate = 2
-        user.save(update_fields=['rate'])
+        user.login_time = timezone.now()
+        user.save()
         return Response(
             data={
                 'click_trans_id': data.get('click_trans_id'),
