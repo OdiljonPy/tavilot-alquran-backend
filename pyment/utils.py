@@ -135,7 +135,7 @@ def validate_click_data(data):
                 merchant_trans_id=str(data.get('merchant_trans_id')),
                 merchant_prepare_id=prepare.id
             )
-        payment = Payment.objects.create(click_trans_id=int(data.get('click_trans_id')), prepare=prepare.id)
+        payment = Payment.objects.create(click_trans_id=int(data.get('click_trans_id')), prepare_id=prepare.id)
         payment.save()
         return prepare.id
 
