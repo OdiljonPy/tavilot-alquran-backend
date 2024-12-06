@@ -2,7 +2,10 @@ from hashlib import md5
 from django.conf import settings
 from .exception import PaymeCustomApiException, PaymeErrorCodes
 from datetime import datetime, timezone
-from .exception import ClickCustomApiException, ClickEnumException
+from .exception import (
+    ClickPrepareException, ClickPrepareCode,
+    ClickCompleteException
+)
 
 
 def check_amount(amount):
@@ -60,98 +63,117 @@ def check_sign_string_complete(
 
 
 def validate_click_data(data):
-    print(data)
+    print('* ' * 55)
+    print('data', data)
     from authentication.models import User
-    from .serializers import PrepareSerializer, CompleteSerializer, ClickValidateSerializer
+    from .serializers import PrepareSerializer, CompleteSerializer
     from .models import Payment
-    serializer = ClickValidateSerializer(data=data)
-    if not serializer.is_valid():
-        print(serializer.errors)
-        raise ClickCustomApiException(
-            enum_code=ClickEnumException.ClickRequestError,
-            click_trans_id=data.get('click_trans_id'),
-            merchant_trans_id=data.get('merchant_trans_id'),
+
+    if int(data.get('action')) not in (1, 2):
+        print('* ' * 55)
+        print('Action must be either 1 or 2')
+        raise ClickPrepareException(
+            enum_code=ClickPrepareCode.ActionNotFound,
+            click_trans_id=int(data.get('click_trans_id')),
+            merchant_trans_id=str(data.get('merchant_trans_id')),
+            merchant_prepare_id=0
         )
-    user = User.objects.filter(id=data.get('merchant_trans_id'), is_verified=True).first()
-    if int(data.get('error')) != 0:
-        raise ClickCustomApiException(
-            enum_code=ClickEnumException.TransactionError,
-            click_trans_id=data.get('click_trans_id'),
-            merchant_trans_id=data.get('merchant_trans_id'),
-        )
-    if int(data.get('amount')) != settings.SUBSCRIPTION_PRICE:
-        raise ClickCustomApiException(
-            enum_code=ClickEnumException.IncorrectParameterAmount,
-            click_trans_id=data.get('click_trans_id'),
-            merchant_trans_id=data.get('merchant_trans_id'),
-        )
-    if not user:
-        raise ClickCustomApiException(
-            enum_code=ClickEnumException.UserNotFound,
-            click_trans_id=data.get('click_trans_id'),
-            merchant_trans_id=data.get('merchant_trans_id'),
-        )
-    if user and user.rate == 2:
-        raise ClickCustomApiException(
-            enum_code=ClickEnumException.AlreadyPaidError,
-            click_trans_id=data.get('click_trans_id'),
-            merchant_trans_id=data.get('merchant_trans_id')
-        )
+
     if int(data.get('action')) == 0:
         serializer = PrepareSerializer(data=data)
         if not serializer.is_valid():
-            print(serializer.errors)
-            raise ClickCustomApiException(
-                enum_code=ClickEnumException.ClickRequestError,
-                click_trans_id=data.get('click_trans_id'),
-                merchant_trans_id=data.get('merchant_trans_id'),
-            )
-        if not check_sign_string(
-                serializer.validated_data.get('click_trans_id'),
-                serializer.validated_data.get('merchant_trans_id'),
-                data.get('amount'),
-                data.get('action'),
-                serializer.validated_data.get('sign_time'),
-                serializer.validated_data.get('sign_string')):
-            raise ClickCustomApiException(
-                enum_code=ClickEnumException.SignCheckFailedError,
-                click_trans_id=data.get('click_trans_id'),
-                merchant_trans_id=data.get('merchant_trans_id')
+            print('* ' * 55)
+            print('PrepareSerializer Error', serializer.errors)
+            raise ClickPrepareException(
+                enum_code=ClickPrepareCode.ClickRequestError,
+                click_trans_id=int(data.get('click_trans_id')),
+                merchant_trans_id=str(data.get('merchant_trans_id')),
+                merchant_prepare_id=0
             )
         prepare = serializer.save()
-        payment = Payment.objects.create(click_trans_id=data.get('click_trans_id'), prepare_id=prepare.id)
+        user = User.objects.filter(id=data.get('merchant_trans_id'), is_verified=True).first()
+        if int(data.get('error')) != 0:
+            raise ClickPrepareException(
+                enum_code=ClickPrepareCode.TransactionError,
+                click_trans_id=int(data.get('click_trans_id')),
+                merchant_trans_id=str(data.get('merchant_trans_id')),
+                merchant_prepare_id=prepare.id
+            )
+        if int(data.get('amount')) != settings.SUBSCRIPTION_PRICE:
+            raise ClickPrepareException(
+                enum_code=ClickPrepareCode.IncorrectParameterAmount,
+                click_trans_id=int(data.get('click_trans_id')),
+                merchant_trans_id=str(data.get('merchant_trans_id')),
+                merchant_prepare_id=prepare.id
+            )
+        if not user:
+            raise ClickPrepareException(
+                enum_code=ClickPrepareCode.UserNotFound,
+                click_trans_id=int(data.get('click_trans_id')),
+                merchant_trans_id=str(data.get('merchant_trans_id')),
+                merchant_prepare_id=prepare.id
+            )
+        if user and user.rate == 2:
+            raise ClickPrepareException(
+                enum_code=ClickPrepareCode.AlreadyPaidError,
+                click_trans_id=int(data.get('click_trans_id')),
+                merchant_trans_id=str(data.get('merchant_trans_id')),
+                merchant_prepare_id=prepare.id
+            )
+        if not check_sign_string(
+                click_trans_id=int(data.get('click_trans_id')),
+                merchant_trans_id=str(data.get('merchant_trans_id')),
+                amount=data.get('amount'),
+                action=data.get('action'),
+                sign_time=data.get('sign_time'),
+                sign_string=data.get('sign_string')):
+            print('* ' * 55)
+            print('Error check_sign_string')
+            raise ClickPrepareException(
+                enum_code=ClickPrepareCode.SignCheckFailedError,
+                click_trans_id=int(data.get('click_trans_id')),
+                merchant_trans_id=str(data.get('merchant_trans_id')),
+                merchant_prepare_id=prepare.id
+            )
+        payment = Payment.objects.create(click_trans_id=int(data.get('click_trans_id')), prepare=prepare.id)
         payment.save()
         return prepare.id
+
     serializer = CompleteSerializer(data=data)
     if not serializer.is_valid():
-        print(serializer.errors)
-        raise ClickCustomApiException(
-            enum_code=ClickEnumException.ClickRequestError,
-            click_trans_id=data.get('click_trans_id'),
-            merchant_trans_id=data.get('merchant_trans_id'),
-        )
-    if not check_sign_string_complete(
-            serializer.validated_data.get('click_trans_id'),
-            serializer.validated_data.get('merchant_trans_id'),
-            data.get('amount'),
-            data.get('action'),
-            serializer.validated_data.get('sign_time'),
-            serializer.validated_data.get('sign_string'),
-            data.get('merchant_prepare_id')):
-        print('Error')
-        raise ClickCustomApiException(
-            enum_code=ClickEnumException.SignCheckFailedError,
-            click_trans_id=data.get('click_trans_id'),
-            merchant_trans_id=data.get('merchant_trans_id'),
-        )
-    payment = Payment.objects.filter(prepare_id=serializer.validated_data.get('merchant_prepare_id')).first()
-    if not payment:
-        raise ClickCustomApiException(
-            enum_code=ClickEnumException.TransactionNotExist,
-            click_trans_id=data.get('click_trans_id'),
-            merchant_trans_id=data.get('merchant_trans_id'),
+        print('* ' * 55)
+        print('CompleteSerializer Error', serializer.errors)
+        raise ClickCompleteException(
+            enum_code=ClickPrepareCode.ClickRequestError,
+            click_trans_id=int(data.get('click_trans_id')),
+            merchant_trans_id=str(data.get('merchant_trans_id')),
+            merchant_confirm_id=0
         )
     complete = serializer.save()
+    if not check_sign_string_complete(
+            click_trans_id=data.get('click_trans_id'),
+            merchant_trans_id=data.get('merchant_trans_id'),
+            amount=data.get('amount'),
+            action=data.get('action'),
+            sign_time=data.get('sign_time'),
+            sign_string=data.get('sign_string'),
+            merchant_prepare_id=data.get('merchant_prepare_id')):
+        print('* ' * 55)
+        print('Error check_sign_string_complete')
+        raise ClickCompleteException(
+            enum_code=ClickPrepareCode.SignCheckFailedError,
+            click_trans_id=data.get('click_trans_id'),
+            merchant_trans_id=data.get('merchant_trans_id'),
+            merchant_confirm_id=complete.id
+        )
+    payment = Payment.objects.filter(click_trans_id=data.get('click_trans_id'), status=0).first()
+    if not payment:
+        raise ClickCompleteException(
+            enum_code=ClickPrepareCode.TransactionNotExist,
+            click_trans_id=int(data.get('click_trans_id')),
+            merchant_trans_id=str(data.get('merchant_trans_id')),
+            merchant_confirm_id=complete.id
+        )
     payment.complete_id = complete.id
     payment.status = 1
     payment.save(update_fields=['complete_id', 'status'])

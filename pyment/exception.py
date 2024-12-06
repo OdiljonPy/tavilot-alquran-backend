@@ -54,21 +54,31 @@ class PaymeCustomApiException(APIException):
         }
 
 
-class ClickCustomApiException(ValidationError):
-    def __init__(self, enum_code, click_trans_id, merchant_trans_id):
+class ClickPrepareException(ValidationError):
+    def __init__(self, enum_code, click_trans_id: int, merchant_trans_id: str, merchant_prepare_id: int):
         error, error_note = enum_code.value
         self.detail = {
+            'error': error,
+            'error_note': error_note,
             'click_trans_id': click_trans_id,
             'merchant_trans_id': merchant_trans_id,
-            'error': error,
-            'merchant_prepare_id': '',
-            'error_note': error_note,
-            'ok': False,
-            'result': ''
+            'merchant_prepare_id': merchant_prepare_id,
         }
 
 
-class ClickEnumException(Enum):
+class ClickCompleteException(ValidationError):
+    def __init__(self, enum_code, click_trans_id: int, merchant_trans_id: str, merchant_confirm_id: int):
+        error, error_note = enum_code.value
+        self.detail = {
+            'error': error,
+            'error_note': error_note,
+            'click_trans_id': click_trans_id,
+            'merchant_trans_id': merchant_trans_id,
+            'merchant_confirm_id': merchant_confirm_id,
+        }
+
+
+class ClickPrepareCode(Enum):
     ClickRequestError = (-8, 'Error in request from click')
     AlreadyPaidError = (-4, 'Already paid')
     SignCheckFailedError = (-1, 'SIGN CHECK FAILED!')
@@ -76,3 +86,4 @@ class ClickEnumException(Enum):
     TransactionError = (-9, 'Transaction cancelled')
     IncorrectParameterAmount = (-2, 'Incorrect parameter amount')
     TransactionNotExist = (-6, 'Transaction does not exist')
+    ActionNotFound = (-3, 'Action not found')
