@@ -241,8 +241,8 @@ class ClickTransactionViewSet(ViewSet):
             data={
                 'click_trans_id': data.get('click_trans_id'),
                 'merchant_trans_id': data.get('merchant_trans_id'),
-                'error': 0,
                 'merchant_prepare_id': validate,
+                'error': 0,
                 'error_note': data.get('error')
             }, status=status.HTTP_200_OK)
 
@@ -261,7 +261,7 @@ class ClickTransactionViewSet(ViewSet):
             data={
                 'click_trans_id': data.get('click_trans_id'),
                 'merchant_trans_id': data.get('merchant_trans_id'),
-                'error': 0,
                 'merchant_confirm_id': validate,
+                'error': 0,
                 'error_note': data.get('error')
             }, status=status.HTTP_200_OK)
