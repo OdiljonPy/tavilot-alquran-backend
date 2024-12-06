@@ -107,7 +107,6 @@ class UserViewSet(ViewSet):
         tags=['User']
     )
     def login(self, request):
-        print(request.data)
         login_time = timezone.now().isoformat()
         serializer = UserLoginRequestSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
