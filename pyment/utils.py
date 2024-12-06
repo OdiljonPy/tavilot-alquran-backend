@@ -48,7 +48,7 @@ def encrypt(data):
 
 
 def check_sign_string(click_trans_id, merchant_trans_id, amount, action, sign_time, sign_string):
-    payload = (f'{click_trans_id}{settings.SERVICE_ID}{settings.SECRET_KEY}{merchant_trans_id}{amount}'
+    payload = (f'{click_trans_id}{settings.SERVICE_ID}{settings.CLICK_SECRET_KEY}{merchant_trans_id}{amount}'
                f'{action}{sign_time}')
     encoded_payload = encrypt(payload)
     return encoded_payload == sign_string
@@ -56,7 +56,7 @@ def check_sign_string(click_trans_id, merchant_trans_id, amount, action, sign_ti
 
 def check_sign_string_complete(
         click_trans_id, merchant_trans_id, amount, action, sign_time, sign_string, merchant_prepare_id):
-    payload = (f'{click_trans_id}{settings.SERVICE_ID}{settings.SECRET_KEY}{merchant_trans_id}'
+    payload = (f'{click_trans_id}{settings.SERVICE_ID}{settings.CLICK_SECRET_KEY}{merchant_trans_id}'
                f'{merchant_prepare_id}{amount}{action}{sign_time}')
     encoded_payload = encrypt(payload)
     return encoded_payload == sign_string
