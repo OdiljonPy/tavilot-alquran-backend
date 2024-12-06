@@ -43,8 +43,11 @@ class UserViewSet(ViewSet):
         tags=['User']
     )
     def subscription_check(self, request):
-        return Response({"result": User.objects.filter(id=request.user.id, rate=2).exists(), 'ok': True,
-                         'prays': settings.SUBSCRIPTION_PRICE},
+        user_id = request.user.id
+        return Response({"result": User.objects.filter(id=request.user.id, rate=2).exists(),
+                         'user_id': user_id, 'ok': True,
+                         'prays_click': settings.SUBSCRIPTION_PRICE_CLICK,
+                         'prays_payme': settings.SUBSCRIPTION_PRICE_PAYME},
                         status=status.HTTP_200_OK)
 
     @swagger_auto_schema(

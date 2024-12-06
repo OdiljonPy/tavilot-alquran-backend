@@ -9,7 +9,7 @@ from .exception import (
 
 
 def check_amount(amount):
-    if settings.SUBSCRIPTION_PRICE != amount:
+    if settings.SUBSCRIPTION_PRICE_PAYME != amount:
         raise PaymeCustomApiException(PaymeErrorCodes.INVALID_AMOUNT)
     return
 
