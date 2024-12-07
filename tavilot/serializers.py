@@ -1,6 +1,8 @@
 from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory, Juz
 from rest_framework import serializers
 from config import settings
+import markdown
+
 
 class ChapterListSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
@@ -140,7 +142,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ['id', 'title', 'category', 'sub_category', 'file',  'file_type', 'description', 'is_published', 'is_premium',
+        fields = ['id', 'title', 'category', 'sub_category', 'file', 'file_type', 'description', 'is_published',
+                  'is_premium',
                   'image']
 
 
@@ -156,6 +159,11 @@ class AboutUsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AboutUs
         fields = ['id', 'description']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['description'] = markdown.markdown(instance.description)
+        return data
 
 
 class JuzSerializer(serializers.ModelSerializer):
@@ -201,6 +209,7 @@ class ChapterUzArabJuzSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
+
     description = serializers.SerializerMethodField()
 
     class Meta:
@@ -209,7 +218,6 @@ class ChapterUzArabJuzSerializer(serializers.ModelSerializer):
 
     def get_description(self, obj):
         return
-
 
     def get_verses(self, obj):
         juz = self.context.get('juz')
@@ -302,6 +310,7 @@ class JuzFullSerializer(serializers.ModelSerializer):
 
 class ChapterIdSerializer(serializers.Serializer):
     chapter_ids = serializers.ListField(child=serializers.IntegerField())
+
 
 class ChapterIdNameSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
