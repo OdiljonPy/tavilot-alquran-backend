@@ -4,6 +4,7 @@ from config import settings
 import html2text
 from bs4 import BeautifulSoup
 
+
 class ChapterListSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -138,7 +139,6 @@ class PostSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['title'] = serializers.CharField(source=f'title_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
     class Meta:
         model = Post
@@ -146,37 +146,57 @@ class PostSerializer(serializers.ModelSerializer):
                   'is_premium',
                   'image']
 
-
-class AboutUsSerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def get_description(self, obj):
         request = self.context.get('request')
-        language = 'uz'
+        language = 'uz'  # Standart til
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
+        description_field = f'description_{language}'
+        description = getattr(obj, description_field, obj.description)
+
+        soup = BeautifulSoup(description, "html.parser")
+
+        for img in soup.find_all("img"):
+            base64_data = img.get("src")
+            alt_text = img.get("alt", "image")
+            markdown_image = f"![{alt_text}]({base64_data})"
+            img.replace_with(markdown_image)
+
+        markdown_converter = html2text.HTML2Text()
+        markdown_converter.ignore_links = False
+        markdown_description = markdown_converter.handle(str(soup))
+
+        return markdown_description
+
+
+class AboutUsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AboutUs
         fields = ['id', 'description']
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        markdown_converter = html2text.HTML2Text()
-        markdown_converter.ignore_links = False
+    def get_description(self, obj):
+        request = self.context.get('request')
+        language = 'uz'  # Standart til
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
 
-        # Rasmlarni Markdown formatida qo'shish
-        soup = BeautifulSoup(instance.description, "html.parser")
+        description_field = f'description_{language}'
+        description = getattr(obj, description_field, obj.description)
+
+        soup = BeautifulSoup(description, "html.parser")
+
         for img in soup.find_all("img"):
             base64_data = img.get("src")
-            alt_text = img.get("alt", "image")  # Alt matn, bo'lmasa "image"
+            alt_text = img.get("alt", "image")
             markdown_image = f"![{alt_text}]({base64_data})"
             img.replace_with(markdown_image)
 
-        # HTMLdan Markdownga o'tkazish
+        markdown_converter = html2text.HTML2Text()
+        markdown_converter.ignore_links = False
         markdown_description = markdown_converter.handle(str(soup))
-        data['description'] = markdown_description
-        return data
+
+        return markdown_description
 
 
 class JuzSerializer(serializers.ModelSerializer):
