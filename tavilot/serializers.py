@@ -1,7 +1,7 @@
 from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory, Juz
 from rest_framework import serializers
 from config import settings
-import markdown
+import html2text
 
 
 class ChapterListSerializer(serializers.ModelSerializer):
@@ -162,7 +162,10 @@ class AboutUsSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data['description'] = markdown.markdown(instance.description)
+        markdown_converter = html2text.HTML2Text()
+        markdown_converter.ignore_links = False
+        markdown_description = markdown_converter.handle(instance.description)
+        data['description'] = markdown_description
         return data
 
 
