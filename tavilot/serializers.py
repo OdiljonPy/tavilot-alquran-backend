@@ -2,7 +2,7 @@ from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory, Juz
 from rest_framework import serializers
 from config import settings
 import html2text
-
+from bs4 import BeautifulSoup
 
 class ChapterListSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
@@ -164,8 +164,17 @@ class AboutUsSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         markdown_converter = html2text.HTML2Text()
         markdown_converter.ignore_links = False
-        markdown_description = markdown_converter.handle(instance.description)
-        data['description'] = markdown_description
+
+        # Rasmlarni Markdown formatida qo'shish
+        soup = BeautifulSoup(instance.description, "html.parser")
+        for img in soup.find_all("img"):
+            base64_data = img.get("src")
+            alt_text = img.get("alt", "image")  # Alt matn, bo'lmasa "image"
+            markdown_image = f"![{alt_text}]({base64_data})"
+            img.replace_with(markdown_image)
+
+        # HTMLdan Markdownga o'tkazish
+        markdown_description = markdown_converter.handle(str(soup))
         return data
 
 
