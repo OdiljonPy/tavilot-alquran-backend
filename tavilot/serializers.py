@@ -175,6 +175,7 @@ class AboutUsSerializer(serializers.ModelSerializer):
 
         # HTMLdan Markdownga o'tkazish
         markdown_description = markdown_converter.handle(str(soup))
+        data['description'] = markdown_description
         return data
 
 
