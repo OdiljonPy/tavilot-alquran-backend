@@ -1,5 +1,5 @@
 from modeltranslation.translator import translator, TranslationOptions
-from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory, Juz
+from .models import Chapter, Verse, AboutUs, Juz, Moturudiy, Manuscript, Studies, Resources, Refusal
 
 
 class ChapterTranslationOptions(TranslationOptions):
@@ -10,30 +10,40 @@ class VerseTranslationOptions(TranslationOptions):
     fields = ('text', 'description')
 
 
-class CategoryTranslationOptions(TranslationOptions):
-    fields = ('name', 'title')
-
-
-class PostTranslationOptions(TranslationOptions):
+class MoturudiyTranslationOptions(TranslationOptions):
     fields = ('title', 'description')
 
+
+class ManuscriptTranslationOptions(TranslationOptions):
+    fields = ('title', 'description')
+
+
+class StudiesTranslationOptions(TranslationOptions):
+    fields = ('title', 'description')
+
+
+class ResourcesTranslationOptions(TranslationOptions):
+    fields = ('title', 'description')
+
+
+class RefusalTranslationOptions(TranslationOptions):
+    fields = ('title', 'description')
 
 
 class AboutUsTranslationOptions(TranslationOptions):
     fields = ('description',)
 
 
-class SubCategoryTranslationOptions(TranslationOptions):
-    fields = ('name',)
-
 class JuzTranslationOptions(TranslationOptions):
     fields = ('title',)
 
 
-translator.register(SubCategory, SubCategoryTranslationOptions)
+translator.register(Moturudiy, MoturudiyTranslationOptions)
 translator.register(Chapter, ChapterTranslationOptions)
 translator.register(Verse, VerseTranslationOptions)
-translator.register(Category, CategoryTranslationOptions)
-translator.register(Post, PostTranslationOptions)
+translator.register(Manuscript, ManuscriptTranslationOptions)
+translator.register(Studies, StudiesTranslationOptions)
+translator.register(Resources, ResourcesTranslationOptions)
+translator.register(Refusal, RefusalTranslationOptions)
 translator.register(AboutUs, AboutUsTranslationOptions)
 translator.register(Juz, JuzTranslationOptions)

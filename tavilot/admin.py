@@ -1,10 +1,5 @@
 from django.contrib import admin
-from .models import Chapter, Verse, Post, Category, AboutUs, SubCategory, Juz
-
-
-class SubCategoryTabularInline(admin.TabularInline):
-    model = SubCategory
-    extra = 1
+from .models import Chapter, Verse, AboutUs, Juz, Moturudiy, Manuscript, Studies, Resources, Refusal
 
 
 @admin.register(Chapter)
@@ -22,22 +17,49 @@ class VerseAdmin(admin.ModelAdmin):
     list_filter = ('chapter',)
 
 
-@admin.register(Category)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    list_display_links = ('id', 'name')
-    search_fields = ('name',)
-    inlines = [SubCategoryTabularInline]
-
-
-@admin.register(Post)
-class PostAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'category', 'file', 'is_premium', 'is_published')
-    list_display_links = ('id', 'category', 'is_published')
+@admin.register(Moturudiy)
+class MoturudiyAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'file', 'is_published')
+    list_display_links = ('id', 'is_published')
     search_fields = ('title', 'description')
-    list_filter = ('category', 'is_published', 'is_premium')
+    list_filter = ('is_published',)
     exclude = ('file_type',)
 
+
+@admin.register(Manuscript)
+class ManuscriptAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'file', 'is_published')
+    list_display_links = ('id', 'is_published')
+    search_fields = ('title', 'description')
+    list_filter = ('is_published',)
+    exclude = ('file_type',)
+
+
+@admin.register(Studies)
+class StudiesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'file', 'is_published')
+    list_display_links = ('id', 'is_published')
+    search_fields = ('title', 'description')
+    list_filter = ('is_published',)
+    exclude = ('file_type',)
+
+
+@admin.register(Resources)
+class ResourcesAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'file', 'is_published')
+    list_display_links = ('id', 'is_published')
+    search_fields = ('title', 'description')
+    list_filter = ('is_published',)
+    exclude = ('file_type',)
+
+
+@admin.register(Refusal)
+class RefusalAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'file', 'is_published')
+    list_display_links = ('id', 'is_published')
+    search_fields = ('title', 'description')
+    list_filter = ('is_published',)
+    exclude = ('file_type',)
 
 
 @admin.register(AboutUs)
