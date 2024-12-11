@@ -94,10 +94,9 @@ class Moturudiy(BaseModel):
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
 
-    def clean(self):
-        super().clean()
+    def save(self, *args, **kwargs):
         self.file_type = str(self.file.name).split('.')[-1]
-        self.save()
+        super().save(*args, **kwargs)
 
 
     def __str__(self):
@@ -117,10 +116,9 @@ class Manuscript(BaseModel):
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
 
-    def clean(self):
-        super().clean()
+    def save(self, *args, **kwargs):
         self.file_type = str(self.file.name).split('.')[-1]
-        self.save()
+        super().save(*args, **kwargs)
 
 
     def __str__(self):
@@ -141,10 +139,9 @@ class Studies(BaseModel):
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
 
-    def clean(self):
-        super().clean()
+    def save(self, *args, **kwargs):
         self.file_type = str(self.file.name).split('.')[-1]
-        self.save()
+        super().save(*args, **kwargs)
 
 
     def __str__(self):
@@ -165,10 +162,9 @@ class Resources(BaseModel):
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
 
-    def clean(self):
-        super().clean()
+    def save(self, *args, **kwargs):
         self.file_type = str(self.file.name).split('.')[-1]
-        self.save()
+        super().save(*args, **kwargs)
 
 
     def __str__(self):
@@ -188,10 +184,9 @@ class Refusal(BaseModel):
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
 
-    def clean(self):
-        super().clean()
+    def save(self, *args, **kwargs):
         self.file_type = str(self.file.name).split('.')[-1]
-        self.save()
+        super().save(*args, **kwargs)
 
 
     def __str__(self):
