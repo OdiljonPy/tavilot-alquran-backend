@@ -9,9 +9,13 @@ from exception.error_message import ErrorCodes
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from .models import (Chapter, Category, Post, AboutUs, Verse, Juz)
-from .serializers import (ChapterFullSerializer, PostSerializer,
-                          ChapterListSerializer, CategorySerializer,
+from .models import (Chapter, AboutUs, Verse, Juz, Moturudiy,
+                     Manuscript, Studies, Resources, Refusal)
+
+from .serializers import (ChapterFullSerializer, MoturudiySerializer,
+                          ManuscriptSerializer, StudiesSerializer,
+                          ResourcesSerializer, RefusalSerializer,
+                          ChapterListSerializer,
                           AboutUsSerializer, ChapterUzArabSerializer,
                           VerseSearchSerializer, ChapterIdNameSerializer,
                           JuzSerializer, ChapterIdSerializer,
@@ -39,9 +43,10 @@ class JuzViewSet(ViewSet):
     )
     def get_juz_detail(self, request, pk):
         juz = Juz.objects.prefetch_related('juz_chapter', 'juz_verse').filter(id=pk).first()
+        user = request.user
         if juz is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        if request.user.rate and request.user.rate in [2]:
+        if getattr(user, 'rate', None) and user.rate in [2]:
             serializer = JuzFullSerializer(juz, context={'request': request})
         else:
             serializer = JuzUzArabSerializer(juz, context={'request': request})
@@ -68,9 +73,10 @@ class ChapterViewSet(ViewSet):
     )
     def chapter_detail(self, request, pk):
         chapter = Chapter.objects.prefetch_related('chapter_verse').filter(id=pk).first()
+        user = request.user
         if chapter is None:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        if request.user.rate and  request.user.rate in [2]:
+        if getattr(user, 'rate', None) and  user.rate in [2]:
             serializer = ChapterFullSerializer(chapter, context={'request': request})
         else:
             serializer = ChapterUzArabSerializer(chapter, context={'request': request})
@@ -110,42 +116,133 @@ class VerseSearchViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(ViewSet):
+class MoturudiyViewSet(ViewSet):
     @swagger_auto_schema(
-        operation_summary='List of Category',
-        operation_description='List of Category',
-        responses={200: CategorySerializer(many=True)},
-        tags=['Category'],
+        operation_summary='List of posts about Moturudiy',
+        operation_description='List of posts about Moturudiy',
+        responses={200: MoturudiySerializer(many=True)},
+        tags=['Moturudiy'],
     )
-    def category_list(self, request):
-        category_list = Category.objects.all()
-        serializer = CategorySerializer(category_list, many=True, context={'request': request})
-        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
-
-
-class PostViewSet(ViewSet):
-    @swagger_auto_schema(
-        operation_summary='List of posts by category id',
-        operation_description='List of posts by category id',
-        responses={200: PostSerializer(many=True)},
-        tags=['Post'],
-    )
-    def posts_list(self, request, pk):
-        data = Post.objects.filter(category_id=pk, is_published=True)
-        serializer = PostSerializer(data, many=True, context={'request': request})
+    def moturudiy_posts_list(self, request):
+        data = Moturudiy.objects.filter(is_published=True)
+        serializer = MoturudiySerializer(data, many=True, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        operation_summary='Detail of post',
-        operation_description='Detail of post',
-        responses={200: PostSerializer()},
-        tags=['Post'],
+        operation_summary='Detail of post about Moturudiy',
+        operation_description='Detail of post about Moturudiy',
+        responses={200: MoturudiySerializer()},
+        tags=['Moturudiy'],
     )
-    def post_detail(self, request, pk):
-        data = Post.objects.filter(id=pk, is_published=True).first()
+    def moturudiy_detail(self, request, pk):
+        data = Moturudiy.objects.filter(id=pk, is_published=True).first()
         if not data:
             raise CustomApiException(ErrorCodes.NOT_FOUND)
-        serializer = PostSerializer(data, context={'request': request})
+        serializer = MoturudiySerializer(data, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
+class ManuscriptViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='List of posts about Manuscript',
+        operation_description='List of posts about Manuscript',
+        responses={200: ManuscriptSerializer(many=True)},
+        tags=['Manuscript'],
+    )
+    def manuscript_posts_list(self, request):
+        data = Manuscript.objects.filter(is_published=True)
+        serializer = ManuscriptSerializer(data, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Detail of post about Manuscript',
+        operation_description='Detail of post about Manuscript',
+        responses={200: ManuscriptSerializer()},
+        tags=['Manuscript'],
+    )
+    def manuscript_detail(self, request, pk):
+        data = Manuscript.objects.filter(id=pk, is_published=True).first()
+        if not data:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        serializer = ManuscriptSerializer(data, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
+class StudiesViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='List of posts about Studies',
+        operation_description='List of posts about Studies',
+        responses={200: StudiesSerializer(many=True)},
+        tags=['Studies'],
+    )
+    def studies_posts_list(self, request):
+        data = Studies.objects.filter(is_published=True)
+        serializer = StudiesSerializer(data, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Detail of post about Studies',
+        operation_description='Detail of post about Studies',
+        responses={200: StudiesSerializer()},
+        tags=['Studies'],
+    )
+    def studies_detail(self, request, pk):
+        data = Studies.objects.filter(id=pk, is_published=True).first()
+        if not data:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        serializer = StudiesSerializer(data, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
+class ResourcesViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='List of posts about Resources',
+        operation_description='List of posts about Resources',
+        responses={200: ResourcesSerializer(many=True)},
+        tags=['Resources'],
+    )
+    def resources_posts_list(self, request):
+        data = Resources.objects.filter(is_published=True)
+        serializer = ResourcesSerializer(data, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Detail of post about Resources',
+        operation_description='Detail of post about Resources',
+        responses={200: ResourcesSerializer()},
+        tags=['Resources'],
+    )
+    def resources_detail(self, request, pk):
+        data = Resources.objects.filter(id=pk, is_published=True).first()
+        if not data:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        serializer = ResourcesSerializer(data, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+
+class RefusalViewSet(ViewSet):
+    @swagger_auto_schema(
+        operation_summary='List of posts about Refusal',
+        operation_description='List of posts about Refusal',
+        responses={200: RefusalSerializer(many=True)},
+        tags=['Refusal'],
+    )
+    def refusal_posts_list(self, request):
+        data = Refusal.objects.filter(is_published=True)
+        serializer = RefusalSerializer(data, many=True, context={'request': request})
+        return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_summary='Detail of post about Refusal',
+        operation_description='Detail of post about Refusal',
+        responses={200: RefusalSerializer()},
+        tags=['Refusal'],
+    )
+    def refusal_detail(self, request, pk):
+        data = Refusal.objects.filter(id=pk, is_published=True).first()
+        if not data:
+            raise CustomApiException(ErrorCodes.NOT_FOUND)
+        serializer = RefusalSerializer(data, context={'request': request})
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
 

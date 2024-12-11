@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.hashers import check_password
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
@@ -8,7 +9,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from exception.error_message import ErrorCodes
 from exception.exceptions import CustomApiException
-from pyment.models import Subscription
 from utils.send_message import send_telegram_otp_code
 from .models import User, OTP, ResetToken
 from .serializers import (
@@ -19,7 +19,6 @@ from .serializers import (
     OTPTokenWithPasswordSerializer,
     RefreshTokenSerializer)
 from .utils import check_otp, user_existing, check_otp_attempts
-from django.conf import settings
 
 
 class UserViewSet(ViewSet):
@@ -122,7 +121,6 @@ class UserViewSet(ViewSet):
         return Response(
             {'result': {'access_token': str(access_token), 'refresh_token': str(refresh_token),
                         'user_rate': user.rate}, 'ok': True}, status=status.HTTP_200_OK)
-
 
     @swagger_auto_schema(
         operation_summary='Token refresh api',

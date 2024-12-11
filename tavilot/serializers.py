@@ -1,4 +1,4 @@
-from .models import Chapter, Verse, Category, Post, AboutUs, SubCategory, Juz
+from .models import Chapter, Verse, AboutUs, Juz, Moturudiy, Manuscript, Studies, Resources, Refusal
 from rest_framework import serializers
 from config import settings
 import html2text
@@ -100,38 +100,7 @@ class VerseSearchSerializer(serializers.ModelSerializer):
         fields = ['id', 'number', 'chapter_id', 'chapter_name', 'chapter_name_arabic']
 
 
-class SubCategorySerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get('request')
-        language = 'uz'
-        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
-            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
-        self.fields['name'] = serializers.CharField(source=f'name_{language}')
-
-    class Meta:
-        model = SubCategory
-        fields = ['id', "category", 'name']
-
-
-class CategorySerializer(serializers.ModelSerializer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        request = self.context.get('request')
-        language = 'uz'
-        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
-            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
-        self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['title'] = serializers.CharField(source=f'title_{language}')
-
-    subcategory = SubCategorySerializer(many=True, read_only=True, source='post_subcategory')
-
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'title', 'subcategory']
-
-
-class PostSerializer(serializers.ModelSerializer):
+class MoturudiySerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
@@ -141,10 +110,8 @@ class PostSerializer(serializers.ModelSerializer):
         self.fields['title'] = serializers.CharField(source=f'title_{language}')
 
     class Meta:
-        model = Post
-        fields = ['id', 'title', 'category', 'sub_category', 'file', 'file_type', 'description', 'is_published',
-                  'is_premium',
-                  'image']
+        model = Moturudiy
+        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
 
 
     def to_representation(self, instance):
@@ -177,6 +144,32 @@ class PostSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data['description'] = markdown_description
         return data
+
+
+class ManuscriptSerializer(MoturudiySerializer):
+    class Meta:
+        model = Manuscript
+        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
+
+
+class StudiesSerializer(MoturudiySerializer):
+    class Meta:
+        model = Studies
+        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
+
+
+
+class ResourcesSerializer(MoturudiySerializer):
+    class Meta:
+        model = Resources
+        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
+
+
+
+class RefusalSerializer(MoturudiySerializer):
+    class Meta:
+        model = Refusal
+        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
 
 
 class AboutUsSerializer(serializers.ModelSerializer):

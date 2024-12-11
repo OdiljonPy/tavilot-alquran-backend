@@ -74,21 +74,6 @@ class Verse(BaseModel):
         ]
 
 
-class Sales(BaseModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    item = models.CharField(max_length=150, verbose_name="элемент")
-    price = models.FloatField(default=0, verbose_name="цена")
-
-    def __str__(self):
-        return str(self.id)
-
-    class Meta:
-        verbose_name = 'Продажa'
-        verbose_name_plural = 'Продажи'
-        ordering = ('-created_at',)
-
-
 class AboutUs(BaseModel):
     description = HTMLField(verbose_name='описание')
 
@@ -101,45 +86,13 @@ class AboutUs(BaseModel):
         ordering = ('-created_at',)
 
 
-class Category(BaseModel):
-    name = models.CharField(max_length=255, verbose_name='навзание')
-    title = models.CharField(max_length=500, verbose_name='заголовок', blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Категория поста'
-        verbose_name_plural = 'Категория посты'
-        ordering = ('-created_at',)
-
-
-class SubCategory(BaseModel):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='post_subcategory',
-                                 verbose_name="категория")
-    name = models.CharField(max_length=255, verbose_name="название")
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = 'Подкатегория'
-        verbose_name_plural = 'Подкатегории'
-        ordering = ('-created_at',)
-
-
-class Post(BaseModel):
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="категория")
-    sub_category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, blank=True, null=True,
-                                     verbose_name="подкатегория")
+class Moturudiy(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
-    image = models.ImageField(upload_to='post/', verbose_name='изображение')
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
-                            validators=[FileExtensionValidator(['pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'zip'])])
+                            validators=[FileExtensionValidator(['pdf',])])
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
-    is_premium = models.BooleanField(default=False, verbose_name="премиум")
 
     def clean(self):
         super().clean()
@@ -151,6 +104,100 @@ class Post(BaseModel):
         return str(self.id)
 
     class Meta:
-        verbose_name = 'Пост'
-        verbose_name_plural = 'Посты'
+        verbose_name = 'Мотуруди'
+        verbose_name_plural = 'Мотуруди'
+        ordering = ('-created_at',)
+
+
+class Manuscript(BaseModel):
+    title = models.CharField(max_length=300, verbose_name="заголовок")
+    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
+                            validators=[FileExtensionValidator(['pdf',])])
+    file_type = models.CharField(max_length=10, blank=True, null=True)
+    description = HTMLField(verbose_name='описание')
+    is_published = models.BooleanField(default=False, verbose_name="опубликовано")
+
+    def clean(self):
+        super().clean()
+        self.file_type = str(self.file.name).split('.')[-1]
+        self.save()
+
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Рукопись и комментарии'
+        verbose_name_plural = 'Рукописи и комментарии'
+        ordering = ('-created_at',)
+
+
+
+class Studies(BaseModel):
+    title = models.CharField(max_length=300, verbose_name="заголовок")
+    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
+                            validators=[FileExtensionValidator(['pdf',])])
+    file_type = models.CharField(max_length=10, blank=True, null=True)
+    description = HTMLField(verbose_name='описание')
+    is_published = models.BooleanField(default=False, verbose_name="опубликовано")
+
+    def clean(self):
+        super().clean()
+        self.file_type = str(self.file.name).split('.')[-1]
+        self.save()
+
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Исследовать'
+        verbose_name_plural = 'Исследования'
+        ordering = ('-created_at',)
+
+
+
+class Resources(BaseModel):
+    title = models.CharField(max_length=300, verbose_name="заголовок")
+    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
+                            validators=[FileExtensionValidator(['pdf',])])
+    file_type = models.CharField(max_length=10, blank=True, null=True)
+    description = HTMLField(verbose_name='описание')
+    is_published = models.BooleanField(default=False, verbose_name="опубликовано")
+
+    def clean(self):
+        super().clean()
+        self.file_type = str(self.file.name).split('.')[-1]
+        self.save()
+
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Ресурс'
+        verbose_name_plural = 'Ресурсы'
+        ordering = ('-created_at',)
+
+
+class Refusal(BaseModel):
+    title = models.CharField(max_length=300, verbose_name="заголовок")
+    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
+                            validators=[FileExtensionValidator(['pdf',])])
+    file_type = models.CharField(max_length=10, blank=True, null=True)
+    description = HTMLField(verbose_name='описание')
+    is_published = models.BooleanField(default=False, verbose_name="опубликовано")
+
+    def clean(self):
+        super().clean()
+        self.file_type = str(self.file.name).split('.')[-1]
+        self.save()
+
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Опровержение фанатизма'
+        verbose_name_plural = 'Опровержение фанатизма'
         ordering = ('-created_at',)
