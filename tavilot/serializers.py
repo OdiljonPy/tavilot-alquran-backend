@@ -35,6 +35,7 @@ class VerseSerializer(serializers.ModelSerializer):
 
 
 class ChapterFullSerializer(serializers.ModelSerializer):
+    verses = serializers.SerializerMethodField()
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
@@ -44,7 +45,8 @@ class ChapterFullSerializer(serializers.ModelSerializer):
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
         self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
-    verses = VerseSerializer(many=True, read_only=True, source='chapter_verse')
+    def get_verses(self, obj):
+        return VerseSerializer(obj.chapter_verse.all(), many=True, context=self.context).data
 
     class Meta:
         model = Chapter
@@ -71,6 +73,7 @@ class VerseUzArabSerializer(serializers.ModelSerializer):
 
 
 class ChapterUzArabSerializer(serializers.ModelSerializer):
+    verses = serializers.SerializerMethodField()
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
@@ -79,7 +82,9 @@ class ChapterUzArabSerializer(serializers.ModelSerializer):
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
 
-    verses = VerseUzArabSerializer(many=True, read_only=True, source='chapter_verse')
+    def get_verses(self, obj):
+        return VerseUzArabSerializer(obj.chapter_verse.all(), many=True, context=self.context).data
+
     description = serializers.SerializerMethodField()
 
     class Meta:
@@ -264,10 +269,10 @@ class ChapterUzArabJuzSerializer(serializers.ModelSerializer):
         return
 
     def get_verses(self, obj):
-        juz = self.context.get('juz')
-        if juz:
-            verses = obj.chapter_verse.filter(juz=juz)
-            return VerseUzArabJuzSerializer(verses, many=True).data
+        juz_id = self.context.get('juz_id')
+        if juz_id:
+            verses = obj.chapter_verse.filter(juz_id=juz_id)
+            return VerseUzArabJuzSerializer(verses, many=True, context=self.context).data
         return []
 
 
@@ -288,7 +293,8 @@ class JuzUzArabSerializer(serializers.ModelSerializer):
 
     def get_chapters(self, obj):
         chapters = obj.juz_chapter.all()
-        return ChapterUzArabJuzSerializer(chapters, many=True, context={'juz': obj}).data
+        request = self.context.get('request')
+        return ChapterUzArabJuzSerializer(chapters, many=True, context={'juz_id': obj.id, 'request': request}).data
 
 
 class VerseFullJuzSerializer(serializers.ModelSerializer):
@@ -300,7 +306,6 @@ class VerseFullJuzSerializer(serializers.ModelSerializer):
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['text'] = serializers.CharField(source=f'text_{language}')
         self.fields['description'] = serializers.CharField(source=f'description_{language}')
-        print(f'description_{language}')
 
     class Meta:
         model = Verse
@@ -318,17 +323,16 @@ class ChapterFullJuzSerializer(serializers.ModelSerializer):
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
         self.fields['description'] = serializers.CharField(source=f'description_{language}')
-        print(f'description_{language}')
 
     class Meta:
         model = Chapter
         fields = ['id', 'juz', 'name', 'name_arabic', 'verse_number', 'type_choice', 'description', 'number', 'verses']
 
     def get_verses(self, obj):
-        juz = self.context.get('juz')
-        if juz:
-            verses = obj.chapter_verse.filter(juz=juz)
-            return VerseFullJuzSerializer(verses, many=True).data
+        juz_id = self.context.get('juz_id')
+        if juz_id:
+            verses = obj.chapter_verse.filter(juz_id=juz_id)
+            return VerseFullJuzSerializer(verses, many=True, context=self.context).data
         return []
 
 
@@ -349,7 +353,8 @@ class JuzFullSerializer(serializers.ModelSerializer):
 
     def get_chapters(self, obj):
         chapters = obj.juz_chapter.all()
-        return ChapterFullJuzSerializer(chapters, many=True, context={'juz': obj}).data
+        request = self.context.get('request')
+        return ChapterFullJuzSerializer(chapters, many=True, context={'juz_id': obj.id, 'request': request}).data
 
 
 class ChapterIdSerializer(serializers.Serializer):
