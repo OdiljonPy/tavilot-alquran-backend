@@ -19,6 +19,13 @@ class User(BaseModel):
     login_time = models.DateTimeField(null=True, blank=True, verbose_name='Время входа')
     is_verified = models.BooleanField(default=False, verbose_name='Проверено')
 
+    @property
+    def is_authenticated(self):
+        if User.objects.filter(id=self.id).exists():
+            return True
+        else:
+            return False
+
     def __str__(self):
         return self.phone_number
 

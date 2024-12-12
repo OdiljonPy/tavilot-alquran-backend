@@ -42,6 +42,8 @@ class UserViewSet(ViewSet):
         tags=['User']
     )
     def subscription_check(self, request):
+        if not request.user.is_authenticated:
+            raise CustomApiException(error_code=ErrorCodes.UNAUTHORIZED)
         user_id = request.user.id
         return Response({"result": User.objects.filter(id=request.user.id, rate=2).exists(),
                          'user_id': user_id, 'ok': True,
