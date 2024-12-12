@@ -27,12 +27,11 @@ class Juz(BaseModel):
 class Chapter(BaseModel):
     juz = models.ManyToManyField(Juz, verbose_name='джуз', related_name='juz_chapter')
     name = models.CharField(max_length=150, verbose_name="название")
-    name_arabic = models.CharField(max_length=150, verbose_name='название на арабском языке', blank=True, null=True)
+    name_arabic = models.CharField(max_length=150, verbose_name='название на арабском языке')
     description = HTMLField(verbose_name="описание")
-    verse_number = models.PositiveIntegerField(verbose_name='количество аятов', blank=True, null=True)
+    verse_number = models.PositiveIntegerField(verbose_name='количество аятов')
     number = models.PositiveIntegerField(unique=True)
-    type_choice = models.IntegerField(choices=CHAPTER_TYPE_CHOICES, verbose_name='место ниспослания суры',
-                                      blank=True, null=True)
+    type_choice = models.IntegerField(choices=CHAPTER_TYPE_CHOICES, verbose_name='место ниспослания суры')
 
 
     def __str__(self):
@@ -47,9 +46,9 @@ class Chapter(BaseModel):
 class Verse(BaseModel):
     juz = models.ForeignKey(Juz, on_delete=models.CASCADE, verbose_name='джуз', related_name='juz_verse')
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура', related_name='chapter_verse')
-    number = models.PositiveIntegerField(verbose_name="порядковый номер аят", db_index=True)
-    text = models.TextField(verbose_name="аят", db_index=True)
-    text_arabic = models.TextField(verbose_name="айат на арабском языке", db_index=True)
+    number = models.PositiveIntegerField(verbose_name="порядковый номер аят")
+    text = models.TextField(verbose_name="аят")
+    text_arabic = models.TextField(verbose_name="айат на арабском языке")
     description = HTMLField(verbose_name="описание аята")
 
     def __str__(self):
