@@ -222,8 +222,8 @@ class ResourcesViewSet(ViewSet):
 
 class RefusalViewSet(ViewSet):
     @swagger_auto_schema(
-        operation_summary='List of posts about Refusal',
-        operation_description='List of posts about Refusal',
+        operation_summary='List of video posts about Refusal',
+        operation_description='List of video posts about Refusal',
         responses={200: RefusalSerializer(many=True)},
         tags=['Refusal'],
     )
@@ -233,8 +233,8 @@ class RefusalViewSet(ViewSet):
         return Response(data={'result': serializer.data, 'ok': True}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
-        operation_summary='Detail of post about Refusal',
-        operation_description='Detail of post about Refusal',
+        operation_summary='Detail of video post about Refusal',
+        operation_description='Detail of video post about Refusal',
         responses={200: RefusalSerializer()},
         tags=['Refusal'],
     )

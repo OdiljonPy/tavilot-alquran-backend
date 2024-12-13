@@ -174,7 +174,7 @@ class ResourcesSerializer(MoturudiySerializer):
 class RefusalSerializer(MoturudiySerializer):
     class Meta:
         model = Refusal
-        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
+        fields = ['id', 'title', 'youtube_url', 'description', 'is_published']
 
 
 class AboutUsSerializer(serializers.ModelSerializer):
