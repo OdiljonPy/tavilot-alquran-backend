@@ -100,7 +100,7 @@ class Moturudiy(BaseModel):
 
 
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
 
     class Meta:
         verbose_name = 'Мотуруди'
@@ -122,7 +122,7 @@ class Manuscript(BaseModel):
 
 
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
 
     class Meta:
         verbose_name = 'Рукопись и комментарии'
@@ -145,7 +145,7 @@ class Studies(BaseModel):
 
 
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
 
     class Meta:
         verbose_name = 'Исследовать'
@@ -168,7 +168,7 @@ class Resources(BaseModel):
 
 
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
 
     class Meta:
         verbose_name = 'Ресурс'
@@ -178,19 +178,13 @@ class Resources(BaseModel):
 
 class Refusal(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
-    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
-                            validators=[FileExtensionValidator(['pdf',])])
-    file_type = models.CharField(max_length=10, blank=True, null=True)
+    youtube_url = models.URLField(default='https://www.youtube.com/', verbose_name='ютуб адрес')
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
 
-    def save(self, *args, **kwargs):
-        self.file_type = str(self.file.name).split('.')[-1]
-        super().save(*args, **kwargs)
-
 
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
 
     class Meta:
         verbose_name = 'Опровержение фанатизма'

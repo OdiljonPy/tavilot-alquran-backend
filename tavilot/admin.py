@@ -55,11 +55,10 @@ class ResourcesAdmin(admin.ModelAdmin):
 
 @admin.register(Refusal)
 class RefusalAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'file', 'is_published')
+    list_display = ('id', 'title', 'youtube_url', 'is_published')
     list_display_links = ('id', 'is_published')
     search_fields = ('title', 'description')
     list_filter = ('is_published',)
-    exclude = ('file_type',)
 
 
 @admin.register(AboutUs)
