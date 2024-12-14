@@ -203,7 +203,7 @@ class AboutUsSerializer(serializers.ModelSerializer):
 
         for iframe in soup.find_all("iframe"):
             src = iframe.get("src", "")
-            markdown_iframe = f"[Embed: {src}]({src})"
+            markdown_iframe = f"[Embed: {src}]"
             iframe.replace_with(markdown_iframe)
 
         # HTMLdan Markdownga aylantirish
