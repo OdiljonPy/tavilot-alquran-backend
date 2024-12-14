@@ -189,20 +189,22 @@ class AboutUsSerializer(serializers.ModelSerializer):
         language = 'uz'  # Standart til
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
-
         # Dinamik tildagi `description` maydonini olish
         description_field = f'description_{language}'
         description = getattr(instance, description_field, instance.description)
-
         # Markdown formatiga aylantirish uchun HTMLni o'zgartirish
         soup = BeautifulSoup(description, "html.parser")
-
         # Rasmlar uchun Markdown formatini yaratish
         for img in soup.find_all("img"):
             base64_data = img.get("src")
             alt_text = img.get("alt", "image")  # Alt matn mavjud bo'lmasa "image"
             markdown_image = f"![{alt_text}]({base64_data})"
             img.replace_with(markdown_image)
+
+        for iframe in soup.find_all("iframe"):
+            src = iframe.get("src", "")
+            markdown_iframe = f"[Embed: {src}]({src})"
+            iframe.replace_with(markdown_iframe)
 
         # HTMLdan Markdownga aylantirish
         markdown_converter = html2text.HTML2Text()
