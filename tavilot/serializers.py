@@ -27,11 +27,42 @@ class VerseSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['text'] = serializers.CharField(source=f'text_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
     class Meta:
         model = Verse
         fields = ['id', 'chapter', 'number', 'text', 'text_arabic', 'description']
+
+
+    def to_representation(self, instance):
+        # Foydalanuvchi so'rovining til parametrini aniqlash
+        request = self.context.get('request')
+        language = 'uz'  # Standart til
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+
+        # Dinamik tildagi `description` maydonini olish
+        description_field = f'description_{language}'
+        description = getattr(instance, description_field, instance.description)
+
+        # Markdown formatiga aylantirish uchun HTMLni o'zgartirish
+        soup = BeautifulSoup(description, "html.parser")
+
+        # Rasmlar uchun Markdown formatini yaratish
+        for img in soup.find_all("img"):
+            base64_data = img.get("src")
+            alt_text = img.get("alt", "image")  # Alt matn mavjud bo'lmasa "image"
+            markdown_image = f"![{alt_text}]({base64_data})"
+            img.replace_with(markdown_image)
+
+        # HTMLdan Markdownga aylantirish
+        markdown_converter = html2text.HTML2Text()
+        markdown_converter.ignore_links = False
+        markdown_description = markdown_converter.handle(str(soup))
+
+        # Ma'lumotlarni qaytarish
+        data = super().to_representation(instance)
+        data['description'] = markdown_description
+        return data
 
 
 class ChapterFullSerializer(serializers.ModelSerializer):
@@ -42,7 +73,6 @@ class ChapterFullSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
     verses = serializers.SerializerMethodField()
     def get_verses(self, obj):
@@ -51,6 +81,37 @@ class ChapterFullSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chapter
         fields = ['id', 'name', 'number', 'name_arabic', 'verse_number', 'type_choice', 'description', 'verses']
+
+    def to_representation(self, instance):
+        # Foydalanuvchi so'rovining til parametrini aniqlash
+        request = self.context.get('request')
+        language = 'uz'  # Standart til
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+
+        # Dinamik tildagi `description` maydonini olish
+        description_field = f'description_{language}'
+        description = getattr(instance, description_field, instance.description)
+
+        # Markdown formatiga aylantirish uchun HTMLni o'zgartirish
+        soup = BeautifulSoup(description, "html.parser")
+
+        # Rasmlar uchun Markdown formatini yaratish
+        for img in soup.find_all("img"):
+            base64_data = img.get("src")
+            alt_text = img.get("alt", "image")  # Alt matn mavjud bo'lmasa "image"
+            markdown_image = f"![{alt_text}]({base64_data})"
+            img.replace_with(markdown_image)
+
+        # HTMLdan Markdownga aylantirish
+        markdown_converter = html2text.HTML2Text()
+        markdown_converter.ignore_links = False
+        markdown_description = markdown_converter.handle(str(soup))
+
+        # Ma'lumotlarni qaytarish
+        data = super().to_representation(instance)
+        data['description'] = markdown_description
+        return data
 
 
 class VerseUzArabSerializer(serializers.ModelSerializer):
@@ -305,12 +366,43 @@ class VerseFullJuzSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['text'] = serializers.CharField(source=f'text_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
 
 
     class Meta:
         model = Verse
         fields = ['id', 'juz', 'chapter', 'number', 'text', 'text_arabic', 'description']
+
+    def to_representation(self, instance):
+        # Foydalanuvchi so'rovining til parametrini aniqlash
+        request = self.context.get('request')
+        language = 'uz'  # Standart til
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+
+        # Dinamik tildagi `description` maydonini olish
+        description_field = f'description_{language}'
+        description = getattr(instance, description_field, instance.description)
+
+        # Markdown formatiga aylantirish uchun HTMLni o'zgartirish
+        soup = BeautifulSoup(description, "html.parser")
+
+        # Rasmlar uchun Markdown formatini yaratish
+        for img in soup.find_all("img"):
+            base64_data = img.get("src")
+            alt_text = img.get("alt", "image")  # Alt matn mavjud bo'lmasa "image"
+            markdown_image = f"![{alt_text}]({base64_data})"
+            img.replace_with(markdown_image)
+
+        # HTMLdan Markdownga aylantirish
+        markdown_converter = html2text.HTML2Text()
+        markdown_converter.ignore_links = False
+        markdown_description = markdown_converter.handle(str(soup))
+
+        # Ma'lumotlarni qaytarish
+        data = super().to_representation(instance)
+        data['description'] = markdown_description
+        return data
+
 
 
 class ChapterFullJuzSerializer(serializers.ModelSerializer):
@@ -323,8 +415,6 @@ class ChapterFullJuzSerializer(serializers.ModelSerializer):
         if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
             language = request.META.get('HTTP_ACCEPT_LANGUAGE')
         self.fields['name'] = serializers.CharField(source=f'name_{language}')
-        self.fields['description'] = serializers.CharField(source=f'description_{language}')
-
 
     class Meta:
         model = Chapter
@@ -336,6 +426,37 @@ class ChapterFullJuzSerializer(serializers.ModelSerializer):
             verses = obj.chapter_verse.filter(juz_id=juz_id)
             return VerseFullJuzSerializer(verses, many=True, context=self.context).data
         return []
+
+    def to_representation(self, instance):
+        # Foydalanuvchi so'rovining til parametrini aniqlash
+        request = self.context.get('request')
+        language = 'uz'  # Standart til
+        if request and request.META.get('HTTP_ACCEPT_LANGUAGE') in settings.MODELTRANSLATION_LANGUAGES:
+            language = request.META.get('HTTP_ACCEPT_LANGUAGE')
+
+        # Dinamik tildagi `description` maydonini olish
+        description_field = f'description_{language}'
+        description = getattr(instance, description_field, instance.description)
+
+        # Markdown formatiga aylantirish uchun HTMLni o'zgartirish
+        soup = BeautifulSoup(description, "html.parser")
+
+        # Rasmlar uchun Markdown formatini yaratish
+        for img in soup.find_all("img"):
+            base64_data = img.get("src")
+            alt_text = img.get("alt", "image")  # Alt matn mavjud bo'lmasa "image"
+            markdown_image = f"![{alt_text}]({base64_data})"
+            img.replace_with(markdown_image)
+
+        # HTMLdan Markdownga aylantirish
+        markdown_converter = html2text.HTML2Text()
+        markdown_converter.ignore_links = False
+        markdown_description = markdown_converter.handle(str(soup))
+
+        # Ma'lumotlarni qaytarish
+        data = super().to_representation(instance)
+        data['description'] = markdown_description
+        return data
 
 
 class JuzFullSerializer(serializers.ModelSerializer):
