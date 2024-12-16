@@ -33,7 +33,6 @@ class Chapter(BaseModel):
     number = models.PositiveIntegerField(unique=True)
     type_choice = models.IntegerField(choices=CHAPTER_TYPE_CHOICES, verbose_name='место ниспослания суры')
 
-
     def __str__(self):
         return self.name
 
@@ -47,7 +46,7 @@ class Verse(BaseModel):
     juz = models.ForeignKey(Juz, on_delete=models.CASCADE, verbose_name='джуз', related_name='juz_verse')
     chapter = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='сура', related_name='chapter_verse')
     number = models.PositiveIntegerField(verbose_name="порядковый номер аят")
-    text = models.TextField(verbose_name="аят")
+    text = models.TextField(verbose_name="аят", null=True, blank=True)
     text_arabic = models.TextField(verbose_name="айат на арабском языке")
     description = HTMLField(verbose_name="описание аята")
 
@@ -88,7 +87,7 @@ class AboutUs(BaseModel):
 class Moturudiy(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
-                            validators=[FileExtensionValidator(['pdf',])])
+                            validators=[FileExtensionValidator(['pdf', ])])
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
@@ -97,9 +96,8 @@ class Moturudiy(BaseModel):
         self.file_type = str(self.file.name).split('.')[-1]
         super().save(*args, **kwargs)
 
-
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
 
     class Meta:
         verbose_name = 'Мотуруди'
@@ -110,7 +108,7 @@ class Moturudiy(BaseModel):
 class Manuscript(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
-                            validators=[FileExtensionValidator(['pdf',])])
+                            validators=[FileExtensionValidator(['pdf', ])])
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
@@ -118,7 +116,6 @@ class Manuscript(BaseModel):
     def save(self, *args, **kwargs):
         self.file_type = str(self.file.name).split('.')[-1]
         super().save(*args, **kwargs)
-
 
     def __str__(self):
         return str(self.id)
@@ -129,11 +126,10 @@ class Manuscript(BaseModel):
         ordering = ('-created_at',)
 
 
-
 class Studies(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
-                            validators=[FileExtensionValidator(['pdf',])])
+                            validators=[FileExtensionValidator(['pdf', ])])
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
@@ -141,7 +137,6 @@ class Studies(BaseModel):
     def save(self, *args, **kwargs):
         self.file_type = str(self.file.name).split('.')[-1]
         super().save(*args, **kwargs)
-
 
     def __str__(self):
         return str(self.id)
@@ -152,11 +147,10 @@ class Studies(BaseModel):
         ordering = ('-created_at',)
 
 
-
 class Resources(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
-                            validators=[FileExtensionValidator(['pdf',])])
+                            validators=[FileExtensionValidator(['pdf', ])])
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
@@ -165,9 +159,8 @@ class Resources(BaseModel):
         self.file_type = str(self.file.name).split('.')[-1]
         super().save(*args, **kwargs)
 
-
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
 
     class Meta:
         verbose_name = 'Ресурс'
@@ -177,19 +170,13 @@ class Resources(BaseModel):
 
 class Refusal(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
-    file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
-                            validators=[FileExtensionValidator(['pdf',])])
-    file_type = models.CharField(max_length=10, blank=True, null=True)
+    youtube_url = models.URLField(default='https://www.youtube.com/', verbose_name='ютуб адрес')
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
 
-    def save(self, *args, **kwargs):
-        self.file_type = str(self.file.name).split('.')[-1]
-        super().save(*args, **kwargs)
-
 
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
 
     class Meta:
         verbose_name = 'Опровержение фанатизма'
