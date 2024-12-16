@@ -48,7 +48,7 @@ class Verse(BaseModel):
     number = models.PositiveIntegerField(verbose_name="порядковый номер аят")
     text = models.TextField(verbose_name="аят", null=True, blank=True)
     text_arabic = models.TextField(verbose_name="айат на арабском языке")
-    description = HTMLField(verbose_name="описание аята")
+    description = HTMLField(verbose_name="описание аята", null=True, blank=True)
 
     def __str__(self):
         return str(self.id)
