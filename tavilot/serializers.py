@@ -201,11 +201,6 @@ class AboutUsSerializer(serializers.ModelSerializer):
             markdown_image = f"![{alt_text}]({base64_data})"
             img.replace_with(markdown_image)
 
-        for iframe in soup.find_all("iframe"):
-            src = iframe.get("src", "")
-            markdown_iframe = f"[Embed: {src}]"
-            iframe.replace_with(markdown_iframe)
-
         # HTMLdan Markdownga aylantirish
         markdown_converter = html2text.HTML2Text()
         markdown_converter.ignore_links = False
