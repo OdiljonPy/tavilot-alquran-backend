@@ -43,6 +43,8 @@ class VerseSerializer(serializers.ModelSerializer):
         # Dinamik tildagi `description` maydonini olish
         description_field = f'description_{language}'
         description = getattr(instance, description_field, instance.description)
+        if not description:
+            description = ""
 
         # Markdown formatiga aylantirish uchun HTMLni o'zgartirish
         soup = BeautifulSoup(description, "html.parser")
@@ -382,6 +384,8 @@ class VerseFullJuzSerializer(serializers.ModelSerializer):
         # Dinamik tildagi `description` maydonini olish
         description_field = f'description_{language}'
         description = getattr(instance, description_field, instance.description)
+        if not description:
+            description = ""
 
         # Markdown formatiga aylantirish uchun HTMLni o'zgartirish
         soup = BeautifulSoup(description, "html.parser")
