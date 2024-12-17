@@ -88,6 +88,7 @@ class Moturudiy(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
                             validators=[FileExtensionValidator(['pdf', ])])
+    file_name = models.CharField(max_length=150, null=True, blank=True)
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
@@ -109,6 +110,7 @@ class Manuscript(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
                             validators=[FileExtensionValidator(['pdf', ])])
+    file_name = models.CharField(max_length=150, null=True, blank=True)
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
@@ -130,6 +132,7 @@ class Studies(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
                             validators=[FileExtensionValidator(['pdf', ])])
+    file_name = models.CharField(max_length=150, null=True, blank=True)
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")
@@ -151,6 +154,7 @@ class Resources(BaseModel):
     title = models.CharField(max_length=300, verbose_name="заголовок")
     file = models.FileField(upload_to='to_students/', verbose_name="файл", null=True, blank=True,
                             validators=[FileExtensionValidator(['pdf', ])])
+    file_name = models.CharField(max_length=150, null=True, blank=True)
     file_type = models.CharField(max_length=10, blank=True, null=True)
     description = HTMLField(verbose_name='описание')
     is_published = models.BooleanField(default=False, verbose_name="опубликовано")

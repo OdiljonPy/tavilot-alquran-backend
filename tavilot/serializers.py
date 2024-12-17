@@ -179,7 +179,7 @@ class MoturudiySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Moturudiy
-        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
+        fields = ['id', 'title', 'file','file_name', 'file_type', 'description', 'is_published']
 
 
     def to_representation(self, instance):
@@ -217,20 +217,20 @@ class MoturudiySerializer(serializers.ModelSerializer):
 class ManuscriptSerializer(MoturudiySerializer):
     class Meta:
         model = Manuscript
-        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
+        fields = ['id', 'title', 'file', 'file_name','file_type', 'description', 'is_published']
 
 
 class StudiesSerializer(MoturudiySerializer):
     class Meta:
         model = Studies
-        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
+        fields = ['id', 'title', 'file', 'file_name', 'file_type', 'description', 'is_published']
 
 
 
 class ResourcesSerializer(MoturudiySerializer):
     class Meta:
         model = Resources
-        fields = ['id', 'title', 'file', 'file_type', 'description', 'is_published']
+        fields = ['id', 'title', 'file', 'file_name','file_type', 'description', 'is_published']
 
 
 
