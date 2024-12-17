@@ -11,19 +11,19 @@ class VerseTranslationOptions(TranslationOptions):
 
 
 class MoturudiyTranslationOptions(TranslationOptions):
-    fields = ('title', 'description')
+    fields = ('title', 'description', 'file_name')
 
 
 class ManuscriptTranslationOptions(TranslationOptions):
-    fields = ('title', 'description')
+    fields = ('title', 'description', 'file_name')
 
 
 class StudiesTranslationOptions(TranslationOptions):
-    fields = ('title', 'description')
+    fields = ('title', 'description', 'file_name')
 
 
 class ResourcesTranslationOptions(TranslationOptions):
-    fields = ('title', 'description')
+    fields = ('title', 'description', 'file_name')
 
 
 class RefusalTranslationOptions(TranslationOptions):
