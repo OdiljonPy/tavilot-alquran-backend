@@ -235,7 +235,7 @@ class ResourcesSerializer(MoturudiySerializer):
 
 
 
-class RefusalSerializer(MoturudiySerializer):
+class RefusalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Refusal
         fields = ['id', 'title', 'youtube_url', 'description', 'is_published']
